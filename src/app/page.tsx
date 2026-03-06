@@ -14,39 +14,38 @@ export default function Home() {
         <div className="absolute bottom-[25%] left-[20%] w-1.5 h-1.5 rounded-full bg-brand-brown/10 animate-float-slow" />
       </div>
 
-      <div className="flex-1 flex flex-col items-center justify-center px-6 text-center relative z-10">
+      <div className="flex-1 flex flex-col items-center justify-center px-6 text-center relative z-10 pb-6">
         {/* Mascot with bounce animation */}
-        <div className="animate-mascot-bounce mb-6">
+        <div className="animate-mascot-bounce mb-4">
           <div className="relative">
             <Image
               src="/images/image.png"
               alt="Cafe Hurno Mascot"
-              width={200}
-              height={200}
+              width={160}
+              height={160}
               className="rounded-3xl shadow-lg"
               priority
             />
-            {/* Soft glow behind mascot */}
             <div className="absolute -inset-4 bg-brand-pink/20 rounded-[2rem] -z-10 blur-xl" />
           </div>
         </div>
 
         {/* Logo badge */}
-        <div className="bg-white rounded-2xl shadow-sm px-6 py-4 mb-8 inline-flex items-center gap-3">
+        <div className="bg-white rounded-2xl shadow-sm px-5 py-3 mb-4 inline-flex items-center gap-3">
           <Image
             src="/images/logo.png"
             alt="Cafe Hurno Logo"
-            width={40}
-            height={40}
+            width={36}
+            height={36}
             className="rounded-lg"
           />
           <div className="text-left">
-            <h1 className="text-xl font-bold text-brand-dark leading-tight">Cafe Hurno</h1>
+            <h1 className="text-lg font-bold text-brand-dark leading-tight">Cafe Hurno</h1>
             <p className="text-[11px] text-brand-muted">Your cozy coffee corner</p>
           </div>
         </div>
 
-        <p className="text-brand-muted text-sm mb-8 max-w-[260px]">
+        <p className="text-brand-muted text-sm mb-6 max-w-[260px]">
           Order ahead, skip the wait. Fresh brewed just for you.
         </p>
 
@@ -54,14 +53,13 @@ export default function Home() {
 
         <Link
           href="/menu"
-          className="mt-5 text-brand-muted text-sm underline underline-offset-4 hover:text-brand-brown transition"
+          className="mt-4 text-brand-muted text-sm underline underline-offset-4 hover:text-brand-brown transition"
         >
           Just browsing? View our menu
         </Link>
       </div>
 
-      {/* Bottom accent wave */}
-      <div className="h-1 bg-gradient-to-r from-brand-pink via-brand-pink-dark to-brand-pink rounded-full mx-8 mb-4" />
+      <div className="h-1 bg-gradient-to-r from-brand-pink via-brand-pink-dark to-brand-pink rounded-full mx-8 mb-3" />
     </div>
   )
 }
