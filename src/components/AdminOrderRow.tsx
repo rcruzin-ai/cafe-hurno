@@ -57,7 +57,7 @@ export default function AdminOrderRow({ order }: { order: OrderWithItems }) {
         {nextStatus && (
           <button
             onClick={handleAdvance}
-            className="bg-brand-accent text-white px-4 py-1.5 rounded-full text-xs font-medium hover:bg-brand-brown transition"
+            className="bg-brand-pink-dark text-white px-4 py-1.5 rounded-full text-xs font-medium hover:bg-brand-dark transition"
           >
             Mark as {ORDER_STATUS_LABELS[nextStatus]}
           </button>

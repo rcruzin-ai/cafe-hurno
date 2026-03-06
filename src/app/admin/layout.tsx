@@ -22,9 +22,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <header className="bg-brand-dark text-white px-4 py-3 flex items-center justify-between">
         <h1 className="font-bold">Cafe Hurno Admin</h1>
         <div className="flex gap-4 text-sm">
-          <Link href="/admin" className="hover:text-brand-accent">Orders</Link>
-          <Link href="/admin/qr" className="hover:text-brand-accent">QR Code</Link>
-          <Link href="/profile" className="hover:text-brand-accent">Profile</Link>
+          <Link href="/admin" className="hover:text-brand-pink">Orders</Link>
+          <Link href="/admin/qr" className="hover:text-brand-pink">QR Code</Link>
+          <Link href="/profile" className="hover:text-brand-pink">Profile</Link>
         </div>
       </header>
       <div className="max-w-2xl mx-auto">{children}</div>

@@ -50,7 +50,7 @@ export default function QRPage() {
 
       <button
         onClick={handleDownload}
-        className="mt-6 bg-brand-accent text-white px-6 py-2 rounded-full font-medium text-sm hover:bg-brand-brown transition"
+        className="mt-6 bg-brand-pink-dark text-white px-6 py-2 rounded-full font-medium text-sm hover:bg-brand-dark transition"
       >
         Download QR Code
       </button>
