@@ -64,3 +64,29 @@ export interface CartItem {
   variant: DrinkVariant
   quantity: number
 }
+
+export interface InventoryItem {
+  id: string
+  name: string
+  unit: string
+  current_stock: number
+  low_stock_threshold: number
+  created_at: string
+}
+
+export interface Recipe {
+  id: string
+  menu_item_id: string
+  variant: DrinkVariant
+  inventory_item_id: string
+  quantity_needed: number
+}
+
+export interface InventoryLog {
+  id: string
+  inventory_item_id: string
+  change_amount: number
+  reason: 'order_deduction' | 'restock' | 'adjustment'
+  reference_id: string | null
+  created_at: string
+}
