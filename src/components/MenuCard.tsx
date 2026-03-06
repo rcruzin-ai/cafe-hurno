@@ -17,8 +17,8 @@ export default function MenuCard({ item }: { item: MenuItem }) {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-      <div className="relative h-40 bg-brand-hero">
+    <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
+      <div className="relative h-36 bg-brand-dark">
         {item.image_url ? (
           <Image
             src={item.image_url}
@@ -27,49 +27,42 @@ export default function MenuCard({ item }: { item: MenuItem }) {
             className="object-cover"
           />
         ) : (
-          <div className="flex items-center justify-center h-full text-4xl">☕</div>
+          <div className="flex items-center justify-center h-full text-4xl">
+            <span className="text-white/30">&#9749;</span>
+          </div>
         )}
       </div>
-      <div className="p-4">
-        <h3 className="font-semibold text-brand-dark">{item.name}</h3>
-        <p className="text-xs text-gray-500 mt-1 line-clamp-2">{item.description}</p>
+      <div className="p-3">
+        <h3 className="font-semibold text-sm text-brand-dark leading-tight">{item.name}</h3>
+        <p className="text-[11px] text-brand-muted mt-0.5 line-clamp-2">{item.description}</p>
 
-        {/* Variant toggle */}
-        <div className="flex gap-2 mt-3">
-          <button
-            onClick={() => setVariant('hot')}
-            className={`flex-1 text-xs py-1.5 rounded-full font-medium transition ${
-              variant === 'hot'
-                ? 'bg-brand-brown text-white'
-                : 'bg-gray-100 text-gray-600'
-            }`}
-          >
-            Hot ({item.hot_size_oz}oz)
-          </button>
-          <button
-            onClick={() => setVariant('cold')}
-            className={`flex-1 text-xs py-1.5 rounded-full font-medium transition ${
-              variant === 'cold'
-                ? 'bg-brand-brown text-white'
-                : 'bg-gray-100 text-gray-600'
-            }`}
-          >
-            Cold ({item.cold_size_oz}oz)
-          </button>
+        <div className="flex gap-1.5 mt-2">
+          {(['hot', 'cold'] as DrinkVariant[]).map((v) => (
+            <button
+              key={v}
+              onClick={() => setVariant(v)}
+              className={`flex-1 text-[10px] py-1 rounded-full font-medium transition capitalize ${
+                variant === v
+                  ? 'bg-brand-dark text-white'
+                  : 'bg-gray-100 text-brand-muted'
+              }`}
+            >
+              {v} ({v === 'hot' ? item.hot_size_oz : item.cold_size_oz}oz)
+            </button>
+          ))}
         </div>
 
-        {/* Price & Add */}
-        <div className="flex items-center justify-between mt-3">
-          <span className="font-bold text-brand-brown">₱{item.price}</span>
+        <div className="flex items-center justify-between mt-2.5">
+          <span className="font-bold text-sm text-brand-brown">P{item.price}</span>
           <button
             onClick={handleAdd}
-            className={`px-4 py-1.5 rounded-full text-xs font-medium transition ${
+            className={`w-7 h-7 rounded-full flex items-center justify-center transition text-sm font-bold ${
               added
-                ? 'bg-green-500 text-white'
-                : 'bg-brand-accent text-white hover:bg-brand-brown'
+                ? 'bg-brand-pink-dark text-white'
+                : 'bg-brand-pink/20 text-brand-brown hover:bg-brand-pink-dark hover:text-white'
             }`}
           >
-            {added ? 'Added!' : 'Add to Cart'}
+            {added ? '✓' : '+'}
           </button>
         </div>
       </div>

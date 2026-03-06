@@ -12,8 +12,14 @@ export default async function MenuPage() {
 
   return (
     <div className="px-4 py-6">
-      <h1 className="text-2xl font-bold text-brand-dark mb-1">Our Menu</h1>
-      <p className="text-sm text-gray-500 mb-6">Choose your favorite brew</p>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-brand-dark">Good day!</h1>
+        <p className="text-sm text-brand-muted mt-1">What would you like to order?</p>
+      </div>
+
+      <h2 className="text-xs font-semibold text-brand-muted uppercase tracking-wider mb-3">
+        Our Drinks
+      </h2>
 
       <div className="grid grid-cols-2 gap-3">
         {(items as MenuItem[] || []).map((item) => (
