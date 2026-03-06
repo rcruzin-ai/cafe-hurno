@@ -19,14 +19,13 @@ export default function Home() {
         <div className="animate-mascot-bounce mb-4">
           <div className="relative">
             <Image
-              src="/images/image.png"
+              src="/images/flushy.png"
               alt="Cafe Hurno Mascot"
-              width={160}
-              height={160}
-              className="rounded-3xl shadow-lg"
+              width={200}
+              height={200}
+              className="drop-shadow-lg"
               priority
             />
-            <div className="absolute -inset-4 bg-brand-pink/20 rounded-[2rem] -z-10 blur-xl" />
           </div>
         </div>
 
