@@ -53,7 +53,7 @@ export default function ProfilePage() {
       <div className="px-4 py-6 text-center">
         <p className="text-4xl mb-4">👤</p>
         <p className="text-gray-500 mb-4">Sign in to view your profile</p>
-        <button onClick={handleLogin} className="bg-brand-brown text-white px-6 py-2 rounded-full text-sm font-medium">
+        <button onClick={handleLogin} className="bg-brand-dark text-white px-6 py-2 rounded-full text-sm font-medium">
           Sign in with Google
         </button>
       </div>
@@ -74,14 +74,14 @@ export default function ProfilePage() {
         )}
         <h2 className="font-bold text-brand-dark">{profile.full_name}</h2>
         <p className="text-sm text-gray-500">{profile.email}</p>
-        <span className="inline-block mt-2 text-xs bg-brand-cream text-brand-brown px-3 py-1 rounded-full capitalize">
+        <span className="inline-block mt-2 text-xs bg-brand-light text-brand-brown px-3 py-1 rounded-full capitalize">
           {profile.role}
         </span>
 
         {profile.role === 'admin' && (
           <button
             onClick={() => router.push('/admin')}
-            className="mt-4 w-full bg-brand-dark text-white py-2 rounded-full text-sm font-medium"
+            className="mt-4 w-full bg-brand-pink-dark text-white py-2 rounded-full text-sm font-medium"
           >
             Admin Dashboard
           </button>
