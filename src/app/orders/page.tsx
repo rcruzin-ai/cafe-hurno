@@ -15,49 +15,50 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchOrders = async () => {
+    let channel: ReturnType<typeof supabase.channel> | null = null
+
+    const init = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
         router.push('/menu')
         return
       }
 
-      const { data } = await supabase
-        .from('orders')
-        .select('*, order_items(*, menu_items(*))')
-        .eq('customer_id', user.id)
-        .order('created_at', { ascending: false })
+      const fetchOrders = async () => {
+        const { data } = await supabase
+          .from('orders')
+          .select('*, order_items(*, menu_items(*))')
+          .eq('customer_id', user.id)
+          .order('created_at', { ascending: false })
+        setOrders((data as OrderWithItems[]) || [])
+        setLoading(false)
+      }
 
-      setOrders((data as OrderWithItems[]) || [])
-      setLoading(false)
+      await fetchOrders()
 
-      // Subscribe to realtime updates
-      const channel = supabase
+      channel = supabase
         .channel('my-orders')
         .on(
           'postgres_changes',
           {
-            event: 'UPDATE',
+            event: '*',
             schema: 'public',
             table: 'orders',
             filter: `customer_id=eq.${user.id}`,
           },
-          (payload) => {
-            setOrders((prev) =>
-              prev.map((o) =>
-                o.id === payload.new.id ? { ...o, ...payload.new } : o
-              )
-            )
+          () => {
+            // Re-fetch full orders (with items) on any change
+            fetchOrders()
           }
         )
         .subscribe()
-
-      return () => {
-        supabase.removeChannel(channel)
-      }
     }
 
-    fetchOrders()
+    init()
+
+    return () => {
+      if (channel) supabase.removeChannel(channel)
+    }
   }, [supabase, router])
 
   if (loading) {
