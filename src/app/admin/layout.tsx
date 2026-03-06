@@ -23,6 +23,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <h1 className="font-bold">Cafe Hurno Admin</h1>
         <div className="flex gap-4 text-sm">
           <Link href="/admin" className="hover:text-brand-pink">Orders</Link>
+          <Link href="/admin/inventory" className="hover:text-brand-pink">Inventory</Link>
           <Link href="/admin/qr" className="hover:text-brand-pink">QR Code</Link>
           <Link href="/profile" className="hover:text-brand-pink">Profile</Link>
         </div>
