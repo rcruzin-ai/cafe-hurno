@@ -3,13 +3,13 @@
 export const dynamic = 'force-dynamic'
 
 import { createClient } from '@/lib/supabase/client'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import OrderCard from '@/components/OrderCard'
 import type { OrderWithItems } from '@/lib/types'
 
 export default function OrdersPage() {
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
   const router = useRouter()
   const [orders, setOrders] = useState<OrderWithItems[]>([])
   const [loading, setLoading] = useState(true)
@@ -31,10 +31,13 @@ export default function OrdersPage() {
           .eq('customer_id', user.id)
           .order('created_at', { ascending: false })
         setOrders((data as OrderWithItems[]) || [])
-        setLoading(false)
       }
 
-      await fetchOrders()
+      try {
+        await fetchOrders()
+      } finally {
+        setLoading(false)
+      }
 
       channel = supabase
         .channel('my-orders')
@@ -48,7 +51,7 @@ export default function OrdersPage() {
           },
           () => {
             // Re-fetch full orders (with items) on any change
-            fetchOrders()
+            fetchOrders().catch(console.error)
           }
         )
         .subscribe()
