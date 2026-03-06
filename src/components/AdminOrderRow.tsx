@@ -20,7 +20,17 @@ export default function AdminOrderRow({ order }: { order: OrderWithItems }) {
       .update({ status: nextStatus })
       .eq('id', order.id)
 
-    if (!error) setStatus(nextStatus)
+    if (!error) {
+      setStatus(nextStatus)
+
+      if (nextStatus === 'preparing') {
+        fetch('/api/inventory/deduct', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order_id: order.id }),
+        }).catch(console.error)
+      }
+    }
   }
 
   return (
