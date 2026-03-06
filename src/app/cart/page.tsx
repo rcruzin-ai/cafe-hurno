@@ -95,7 +95,7 @@ export default function CartPage() {
             <button
               onClick={handlePlaceOrder}
               disabled={loading}
-              className="w-full bg-brand-accent text-white py-3 rounded-full font-semibold hover:bg-brand-brown transition disabled:opacity-50"
+              className="w-full bg-brand-pink-dark text-white py-3 rounded-full font-semibold hover:bg-brand-dark transition disabled:opacity-50"
             >
               {loading ? 'Placing Order...' : user ? 'Place Order' : 'Sign in to Order'}
             </button>
@@ -156,7 +156,7 @@ function OrderSuccess({ orderId }: { orderId: string }) {
           <button
             onClick={handleFeedback}
             disabled={rating === 0}
-            className="w-full bg-brand-accent text-white py-2 rounded-full text-sm font-medium disabled:opacity-50"
+            className="w-full bg-brand-pink-dark text-white py-2 rounded-full text-sm font-medium disabled:opacity-50"
           >
             Submit Feedback
           </button>
