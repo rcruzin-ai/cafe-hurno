@@ -1,15 +1,15 @@
 export const ORDER_STATUS_LABELS: Record<string, string> = {
   pending: 'Pending',
   preparing: 'Preparing',
-  ready: 'Ready',
+  ready: 'Ready for Pickup',
   completed: 'Completed',
 }
 
 export const ORDER_STATUS_COLORS: Record<string, string> = {
-  pending: 'bg-yellow-100 text-yellow-800',
-  preparing: 'bg-blue-100 text-blue-800',
-  ready: 'bg-green-100 text-green-800',
-  completed: 'bg-gray-100 text-gray-800',
+  pending: 'bg-amber-50 text-amber-700',
+  preparing: 'bg-blue-50 text-blue-700',
+  ready: 'bg-green-50 text-green-700',
+  completed: 'bg-gray-100 text-gray-500',
 }
 
 export const ADMIN_EMAIL = 'raymond.cruzin.ai@gmail.com'
