@@ -24,8 +24,14 @@ export default function RecipesPage() {
 
       if (!data) { setLoading(false); return }
 
+      type RecipeRow = {
+        variant: string
+        quantity_needed: number
+        menu_items: { name: string }
+        inventory_items: { name: string; unit: string }
+      }
       const grouped = new Map<string, RecipeView>()
-      for (const row of data as any[]) {
+      for (const row of data as unknown as RecipeRow[]) {
         const key = `${row.menu_items.name}-${row.variant}`
         if (!grouped.has(key)) {
           grouped.set(key, {
