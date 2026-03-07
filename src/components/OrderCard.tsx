@@ -1,16 +1,28 @@
-import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/lib/constants'
+import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS, PAYMENT_STATUS_LABELS, PAYMENT_STATUS_COLORS } from '@/lib/constants'
 import type { OrderWithItems } from '@/lib/types'
 
 export default function OrderCard({ order }: { order: OrderWithItems }) {
+  const paymentStatus = order.payment_status || 'unpaid'
+
   return (
     <div className="bg-white rounded-xl p-4 shadow-sm">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-xs text-gray-400">
-          {new Date(order.created_at).toLocaleString()}
-        </span>
-        <span className={`text-xs font-medium px-3 py-1 rounded-full ${ORDER_STATUS_COLORS[order.status]}`}>
-          {ORDER_STATUS_LABELS[order.status]}
-        </span>
+        <div className="flex items-center gap-2">
+          {order.queue_number && (
+            <span className="text-lg font-bold text-brand-dark">#{order.queue_number}</span>
+          )}
+          <span className="text-xs text-gray-400">
+            {new Date(order.created_at).toLocaleString()}
+          </span>
+        </div>
+        <div className="flex gap-1.5">
+          <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${PAYMENT_STATUS_COLORS[paymentStatus]}`}>
+            {PAYMENT_STATUS_LABELS[paymentStatus]}
+          </span>
+          <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${ORDER_STATUS_COLORS[order.status]}`}>
+            {ORDER_STATUS_LABELS[order.status]}
+          </span>
+        </div>
       </div>
 
       <div className="space-y-1.5">
