@@ -2,24 +2,28 @@
 
 import { createClient } from '@/lib/supabase/client'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS, PAYMENT_STATUS_LABELS, PAYMENT_STATUS_COLORS, PAYMENT_METHOD_LABELS } from '@/lib/constants'
-import type { OrderWithItems, OrderStatus, PaymentStatus, PaymentMethod } from '@/lib/types'
+import type { OrderWithItems, OrderStatus, PaymentStatus, PaymentMethod, UserRole } from '@/lib/types'
 import { useState } from 'react'
 
 const STATUS_FLOW: OrderStatus[] = ['pending', 'preparing', 'ready', 'completed']
 
-export default function AdminOrderRow({ order }: { order: OrderWithItems }) {
+export default function AdminOrderRow({ order, userRole }: { order: OrderWithItems, userRole: UserRole }) {
   const [status, setStatus] = useState<OrderStatus>(order.status)
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>(order.payment_status || 'unpaid')
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(order.payment_method || null)
+  const [editingName, setEditingName] = useState(false)
+  const [customerName, setCustomerName] = useState(
+    order.customer_name || order.profiles?.full_name || order.profiles?.email || 'Customer'
+  )
+  const [deleted, setDeleted] = useState(false)
   const supabase = createClient()
 
-  const nextStatus = STATUS_FLOW[STATUS_FLOW.indexOf(status) + 1] || null
-
-  const customerDisplay = order.customer_name
-    || order.profiles?.full_name
-    || order.profiles?.email
-    || 'Customer'
+  const nextStatus = status === 'voided' ? null : STATUS_FLOW[STATUS_FLOW.indexOf(status) + 1] || null
+  const isVoided = status === 'voided'
   const isGuest = !order.customer_id
+  const isSuperAdmin = userRole === 'super_admin'
+
+  if (deleted) return null
 
   const handleAdvance = async () => {
     if (!nextStatus) return
@@ -30,7 +34,6 @@ export default function AdminOrderRow({ order }: { order: OrderWithItems }) {
 
     if (!error) {
       setStatus(nextStatus)
-
       if (nextStatus === 'preparing') {
         fetch('/api/inventory/deduct', {
           method: 'POST',
@@ -39,6 +42,34 @@ export default function AdminOrderRow({ order }: { order: OrderWithItems }) {
         }).catch(console.error)
       }
     }
+  }
+
+  const handleVoid = async () => {
+    if (!confirm('Void this order?')) return
+    const { error } = await supabase
+      .from('orders')
+      .update({ status: 'voided' })
+      .eq('id', order.id)
+    if (!error) setStatus('voided')
+  }
+
+  const handleDelete = async () => {
+    if (!confirm('Permanently delete this order? This cannot be undone.')) return
+    const { error } = await supabase
+      .from('orders')
+      .delete()
+      .eq('id', order.id)
+    if (!error) setDeleted(true)
+  }
+
+  const handleSaveName = async () => {
+    const trimmed = customerName.trim()
+    if (!trimmed) return
+    await supabase
+      .from('orders')
+      .update({ customer_name: trimmed })
+      .eq('id', order.id)
+    setEditingName(false)
   }
 
   const handlePayment = async (method: 'cash' | 'wallet') => {
@@ -74,17 +105,39 @@ export default function AdminOrderRow({ order }: { order: OrderWithItems }) {
   }
 
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm">
+    <div className={`bg-white rounded-xl p-4 shadow-sm ${isVoided ? 'opacity-60' : ''}`}>
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           {order.queue_number && (
             <span className="text-lg font-bold text-brand-dark">#{order.queue_number}</span>
           )}
           <div>
-            <p className="text-sm font-medium text-brand-dark">
-              {customerDisplay}
-              {isGuest && <span className="text-xs text-gray-400 ml-1">(Guest)</span>}
-            </p>
+            {isSuperAdmin && !isVoided && editingName ? (
+              <div className="flex items-center gap-1">
+                <input
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  className="text-sm border rounded px-1 py-0.5 w-32 focus:outline-none focus:ring-1 focus:ring-brand-pink"
+                  autoFocus
+                  onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
+                />
+                <button onClick={handleSaveName} className="text-xs text-green-600 font-medium">Save</button>
+                <button onClick={() => setEditingName(false)} className="text-xs text-gray-400">Cancel</button>
+              </div>
+            ) : (
+              <p className="text-sm font-medium text-brand-dark">
+                {customerName}
+                {isGuest && <span className="text-xs text-gray-400 ml-1">(Guest)</span>}
+                {isSuperAdmin && !isVoided && (
+                  <button
+                    onClick={() => setEditingName(true)}
+                    className="ml-1 text-[10px] text-gray-400 hover:text-brand-brown"
+                  >
+                    edit
+                  </button>
+                )}
+              </p>
+            )}
             <p className="text-xs text-gray-400">
               {new Date(order.created_at).toLocaleString()}
             </p>
@@ -114,38 +167,58 @@ export default function AdminOrderRow({ order }: { order: OrderWithItems }) {
       </div>
 
       <div className="flex items-center justify-between border-t pt-2">
-        <span className="font-bold text-brand-brown">₱{order.total}</span>
         <div className="flex items-center gap-2">
-          {paymentStatus === 'unpaid' ? (
-            <>
-              <button
-                onClick={() => handlePayment('cash')}
-                className="bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-medium hover:bg-green-100 transition"
-              >
-                Cash
-              </button>
-              <button
-                onClick={() => handlePayment('wallet')}
-                className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-medium hover:bg-blue-100 transition"
-              >
-                E-Wallet
-              </button>
-            </>
-          ) : (
-            <span className="text-xs text-gray-500">
-              Paid via {PAYMENT_METHOD_LABELS[paymentMethod || 'cash']}
-              <button onClick={handleUndoPayment} className="ml-1 text-red-400 underline">undo</button>
-            </span>
-          )}
-          {nextStatus && (
+          <span className="font-bold text-brand-brown">₱{order.total}</span>
+          {!isVoided && (
             <button
-              onClick={handleAdvance}
-              className="bg-brand-pink-dark text-white px-4 py-1.5 rounded-full text-xs font-medium hover:bg-brand-dark transition"
+              onClick={handleVoid}
+              className="text-[10px] text-gray-400 hover:text-red-500 transition"
             >
-              Mark as {ORDER_STATUS_LABELS[nextStatus]}
+              Void
+            </button>
+          )}
+          {isSuperAdmin && (
+            <button
+              onClick={handleDelete}
+              className="text-[10px] text-red-400 hover:text-red-600 transition"
+            >
+              Delete
             </button>
           )}
         </div>
+        {!isVoided && (
+          <div className="flex items-center gap-2">
+            {paymentStatus === 'unpaid' ? (
+              <>
+                <button
+                  onClick={() => handlePayment('cash')}
+                  className="bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-medium hover:bg-green-100 transition"
+                >
+                  Cash
+                </button>
+                <button
+                  onClick={() => handlePayment('wallet')}
+                  className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-medium hover:bg-blue-100 transition"
+                >
+                  E-Wallet
+                </button>
+              </>
+            ) : (
+              <span className="text-xs text-gray-500">
+                Paid via {PAYMENT_METHOD_LABELS[paymentMethod || 'cash']}
+                <button onClick={handleUndoPayment} className="ml-1 text-red-400 underline">undo</button>
+              </span>
+            )}
+            {nextStatus && (
+              <button
+                onClick={handleAdvance}
+                className="bg-brand-pink-dark text-white px-4 py-1.5 rounded-full text-xs font-medium hover:bg-brand-dark transition"
+              >
+                Mark as {ORDER_STATUS_LABELS[nextStatus]}
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {order.feedback && order.feedback.length > 0 && (

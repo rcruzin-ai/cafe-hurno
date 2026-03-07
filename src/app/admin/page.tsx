@@ -3,12 +3,12 @@
 import { createClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
 import AdminOrderRow from '@/components/AdminOrderRow'
-import type { OrderWithItems, OrderStatus } from '@/lib/types'
+import type { OrderWithItems, OrderStatus, UserRole } from '@/lib/types'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS, PAYMENT_STATUS_LABELS, PAYMENT_STATUS_COLORS, PAYMENT_METHOD_LABELS } from '@/lib/constants'
 
 type ViewMode = 'cards' | 'table'
 
-const FILTERS: (OrderStatus | 'all')[] = ['all', 'pending', 'preparing', 'ready', 'completed']
+const FILTERS: (OrderStatus | 'all')[] = ['all', 'pending', 'preparing', 'ready', 'completed', 'voided']
 
 export default function AdminPage() {
   const supabase = createClient()
@@ -16,6 +16,7 @@ export default function AdminPage() {
   const [filter, setFilter] = useState<OrderStatus | 'all'>('all')
   const [view, setView] = useState<ViewMode>('cards')
   const [loading, setLoading] = useState(true)
+  const [userRole, setUserRole] = useState<UserRole>('admin')
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -26,6 +27,15 @@ export default function AdminPage() {
 
       setOrders((data as OrderWithItems[]) || [])
       setLoading(false)
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single()
+        if (profile) setUserRole(profile.role as UserRole)
+      }
     }
     fetchOrders()
 
@@ -113,7 +123,7 @@ export default function AdminPage() {
       ) : view === 'cards' ? (
         <div className="space-y-3">
           {filtered.map((order) => (
-            <AdminOrderRow key={order.id} order={order} />
+            <AdminOrderRow key={order.id} order={order} userRole={userRole} />
           ))}
         </div>
       ) : (
