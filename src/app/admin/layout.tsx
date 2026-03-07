@@ -15,7 +15,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     .eq('id', user.id)
     .single()
 
-  if ((profile as Profile)?.role !== 'admin') redirect('/menu')
+  const role = (profile as Profile)?.role
+  if (role !== 'admin' && role !== 'super_admin') redirect('/menu')
 
   return (
     <div className="min-h-screen bg-gray-50">
