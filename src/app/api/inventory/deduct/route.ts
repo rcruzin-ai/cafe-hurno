@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
@@ -12,6 +13,11 @@ export async function POST(request: NextRequest) {
     .eq('id', user.id)
     .single()
   if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+  const { allowed } = checkRateLimit(`inventory:${user.id}`, 30, 60_000) // 30/minute for admin
+  if (!allowed) {
+    return NextResponse.json({ error: 'Too many requests.' }, { status: 429 })
+  }
 
   const { order_id } = await request.json()
   if (!order_id) return NextResponse.json({ error: 'order_id required' }, { status: 400 })

@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 interface OrderItemInput {
   menu_item_id: string
@@ -11,6 +12,11 @@ export async function POST(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { allowed } = checkRateLimit(`orders:${user.id}`, 10, 60_000) // 10 orders/minute per user
+  if (!allowed) {
+    return NextResponse.json({ error: 'Too many requests. Please wait.' }, { status: 429 })
+  }
 
   let items: OrderItemInput[]
   try {
