@@ -57,7 +57,7 @@ export default function AdminPage() {
     .filter((o) => filter === 'all' || o.status === filter)
     .filter((o) => {
       if (paymentFilter === 'paid') return o.payment_status === 'paid'
-      if (paymentFilter === 'unpaid') return (o.payment_status || 'unpaid') === 'unpaid'
+      if (paymentFilter === 'unpaid') return (o.payment_status || 'unpaid') === 'unpaid' && o.status !== 'voided'
       return true
     })
     .slice()
