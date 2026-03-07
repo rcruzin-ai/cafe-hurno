@@ -23,29 +23,29 @@ export default function FlushyMascot() {
   }
 
   if (pick === 3) {
-    // All 3 together in one frame
+    // All 3 together — overlapping, same height as single (200px)
     return (
-      <div className="flex items-end justify-center gap-1 bg-white/60 rounded-3xl px-4 pt-4 pb-2 shadow-sm">
+      <div className="relative h-[200px] w-[220px]">
         <Image
           src="/images/flushy.png"
           alt="Flushy mascot"
-          width={70}
-          height={70}
-          className="drop-shadow-sm"
+          width={150}
+          height={150}
+          className="drop-shadow-lg absolute bottom-0 left-0 z-10"
         />
         <Image
           src="/images/flushy3.png"
           alt="Flushy with coffee"
-          width={90}
-          height={90}
-          className="drop-shadow-sm -mb-1"
+          width={160}
+          height={160}
+          className="drop-shadow-lg absolute bottom-0 left-1/2 -translate-x-1/2 z-20"
         />
         <Image
           src="/images/flushy2.png"
           alt="Flushy waving"
-          width={70}
-          height={70}
-          className="drop-shadow-sm"
+          width={150}
+          height={150}
+          className="drop-shadow-lg absolute bottom-0 right-0 z-10"
         />
       </div>
     )
