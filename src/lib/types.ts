@@ -1,6 +1,8 @@
 export type UserRole = 'customer' | 'admin'
 export type OrderStatus = 'pending' | 'preparing' | 'ready' | 'completed'
 export type DrinkVariant = 'hot' | 'cold'
+export type PaymentStatus = 'unpaid' | 'paid'
+export type PaymentMethod = 'cash' | 'wallet' | null
 
 export interface Profile {
   id: string
@@ -24,9 +26,13 @@ export interface MenuItem {
 
 export interface Order {
   id: string
-  customer_id: string
+  customer_id: string | null  // null for guest orders
+  customer_name: string | null  // guest name
   status: OrderStatus
   total: number
+  queue_number: number | null
+  payment_status: PaymentStatus
+  payment_method: PaymentMethod
   created_at: string
   updated_at: string
 }

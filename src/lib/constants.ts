@@ -13,3 +13,18 @@ export const ORDER_STATUS_COLORS: Record<string, string> = {
 }
 
 export const ADMIN_EMAIL = 'raymond.cruzin.ai@gmail.com'
+
+export const PAYMENT_STATUS_LABELS: Record<string, string> = {
+  unpaid: 'Unpaid',
+  paid: 'Paid',
+}
+
+export const PAYMENT_STATUS_COLORS: Record<string, string> = {
+  unpaid: 'bg-red-50 text-red-700',
+  paid: 'bg-green-50 text-green-700',
+}
+
+export const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  cash: 'Cash',
+  wallet: 'E-Wallet',
+}
