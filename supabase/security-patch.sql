@@ -1,11 +1,14 @@
 -- Security patch: fix RLS gaps on profiles and feedback
 
--- Fix 1: Users can only update their own profile
+-- Fix 1: Users can only update their own profile, and cannot change their role
 drop policy if exists "Users can update own profile" on public.profiles;
 create policy "Users can update own profile"
   on public.profiles for update
   using (auth.uid() = id)
-  with check (auth.uid() = id);
+  with check (
+    auth.uid() = id
+    and role = (select role from public.profiles where id = auth.uid())
+  );
 
 -- Fix 2: Prevent manual profile inserts — only the handle_new_user trigger should create profiles
 -- The trigger runs as security definer so it bypasses this RLS policy (auth.uid() is null during trigger execution)

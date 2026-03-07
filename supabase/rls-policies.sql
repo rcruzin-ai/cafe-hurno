@@ -72,8 +72,11 @@ create policy "No manual profile inserts"
   on public.profiles for insert
   with check (false);
 
--- Profiles: users can only update their own profile
+-- Profiles: users can only update their own profile, and cannot change their role
 create policy "Users can update own profile"
   on public.profiles for update
   using (auth.uid() = id)
-  with check (auth.uid() = id);
+  with check (
+    auth.uid() = id
+    and role = (select role from public.profiles where id = auth.uid())
+  );

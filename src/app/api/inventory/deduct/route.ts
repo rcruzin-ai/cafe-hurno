@@ -19,7 +19,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Too many requests.' }, { status: 429 })
   }
 
-  const { order_id } = await request.json()
+  let order_id: string
+  try {
+    const body = await request.json() as { order_id?: string }
+    order_id = body.order_id ?? ''
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  }
   if (!order_id) return NextResponse.json({ error: 'order_id required' }, { status: 400 })
 
   // Prevent double-deduction
