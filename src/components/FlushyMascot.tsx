@@ -23,29 +23,32 @@ export default function FlushyMascot() {
   }
 
   if (pick === 3) {
-    // All 3 together — overlapping, same height as single (200px)
+    // All 3 together — flushy3 center front, flushy2 left, flushy1 right
     return (
-      <div className="relative h-[200px] w-[220px]">
+      <div className="relative h-[200px] w-[260px]">
+        {/* flushy2 (waving) — left, peeking from behind center */}
+        <Image
+          src="/images/flushy2.png"
+          alt="Flushy waving"
+          width={145}
+          height={145}
+          className="drop-shadow-lg absolute bottom-0 left-[10px] z-10"
+        />
+        {/* flushy1 (standing) — right, peeking from behind center */}
         <Image
           src="/images/flushy.png"
           alt="Flushy mascot"
-          width={150}
-          height={150}
-          className="drop-shadow-lg absolute bottom-0 left-0 z-10"
+          width={145}
+          height={145}
+          className="drop-shadow-lg absolute bottom-0 right-[10px] z-10"
         />
+        {/* flushy3 (coffee) — center, in front */}
         <Image
           src="/images/flushy3.png"
           alt="Flushy with coffee"
           width={160}
           height={160}
           className="drop-shadow-lg absolute bottom-0 left-1/2 -translate-x-1/2 z-20"
-        />
-        <Image
-          src="/images/flushy2.png"
-          alt="Flushy waving"
-          width={150}
-          height={150}
-          className="drop-shadow-lg absolute bottom-0 right-0 z-10"
         />
       </div>
     )
