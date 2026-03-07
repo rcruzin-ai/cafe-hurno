@@ -37,28 +37,34 @@ export default function CartPage() {
     setLoading(true)
     setError(null)
 
-    const res = await fetch('/api/orders', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        items: items.map(item => ({
-          menu_item_id: item.menuItem.id,
-          variant: item.variant,
-          quantity: item.quantity,
-        })),
-      }),
-    })
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: items.map(item => ({
+            menu_item_id: item.menuItem.id,
+            variant: item.variant,
+            quantity: item.quantity,
+          })),
+        }),
+      })
 
-    const data = await res.json()
-    if (!res.ok || !data.order_id) {
-      setError(data.error || 'Failed to place order')
+      const data = await res.json()
+      if (!res.ok || !data.order_id) {
+        setError(data.error || 'Failed to place order')
+        setLoading(false)
+        return
+      }
+
+      clearCart()
+      setOrderId(data.order_id)
+      setLoading(false)
+    } catch {
+      setError('Network error. Please try again.')
       setLoading(false)
       return
     }
-
-    clearCart()
-    setOrderId(data.order_id)
-    setLoading(false)
   }
 
   if (orderId) {

@@ -12,7 +12,13 @@ export async function POST(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { items } = await request.json() as { items: OrderItemInput[] }
+  let items: OrderItemInput[]
+  try {
+    const body = await request.json() as { items?: OrderItemInput[] }
+    items = body.items ?? []
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  }
 
   if (!Array.isArray(items) || items.length === 0) {
     return NextResponse.json({ error: 'items required' }, { status: 400 })
