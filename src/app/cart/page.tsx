@@ -126,7 +126,7 @@ export default function CartPage() {
             )}
             <button
               onClick={handlePlaceOrder}
-              disabled={loading}
+              disabled={loading || (!user && !guestName.trim())}
               className="w-full bg-brand-pink-dark text-white py-3 rounded-full font-semibold hover:bg-brand-dark transition disabled:opacity-50"
             >
               {loading ? 'Placing Order...' : user ? 'Place Order' : 'Place Order as Guest'}
