@@ -86,31 +86,15 @@ export default function AdminPage() {
         <div className="flex items-center gap-3">
           <div>
             <h2 className="text-xl font-bold text-brand-dark">Orders</h2>
-            <div className="flex gap-3 mt-1">
-              <div className="text-xs">
-                <span className="text-gray-400">Paid </span>
-                <span className="font-semibold text-brand-dark">{paidOrders.length}</span>
-                <span className="text-gray-400 ml-1">₱{paidTotal}</span>
-              </div>
-              <span className="text-gray-200">|</span>
-              <div className="text-xs">
-                <span className="text-gray-400">Unpaid </span>
-                <span className="font-semibold text-brand-dark">{unpaidOrders.length}</span>
-                <span className="text-gray-400 ml-1">₱{unpaidTotal}</span>
-              </div>
+            <div className="flex gap-2 mt-1">
+              <span className="inline-flex items-center gap-1 text-xs bg-green-100 text-green-700 font-medium px-2 py-0.5 rounded-full">
+                Paid {paidOrders.length} <span className="font-normal opacity-75">₱{paidTotal}</span>
+              </span>
+              <span className="inline-flex items-center gap-1 text-xs bg-red-100 text-red-600 font-medium px-2 py-0.5 rounded-full">
+                Unpaid {unpaidOrders.length} <span className="font-normal opacity-75">₱{unpaidTotal}</span>
+              </span>
             </div>
           </div>
-          <button
-            onClick={async () => {
-              if (!confirm('Reset queue number back to 0?')) return
-              const res = await fetch('/api/queue/reset', { method: 'POST' })
-              if (res.ok) alert('Queue reset to 0')
-            }}
-            className="text-xs px-2.5 py-1 rounded-full border border-brand-brown/30 text-brand-brown hover:bg-brand-brown hover:text-white transition"
-            title="Reset queue counter"
-          >
-            Reset Q
-          </button>
         </div>
         <div className="flex gap-1 bg-gray-100 rounded-lg p-0.5">
           <button
@@ -149,6 +133,19 @@ export default function AdminPage() {
             </span>
           </button>
         ))}
+        {filter === 'pending' && (
+          <button
+            onClick={async (e) => {
+              e.stopPropagation()
+              if (!confirm('Reset queue number back to 0?')) return
+              const res = await fetch('/api/queue/reset', { method: 'POST' })
+              if (res.ok) alert('Queue reset to 0')
+            }}
+            className="text-xs px-2.5 py-1.5 rounded-full border border-brand-brown/30 text-brand-brown hover:bg-brand-brown hover:text-white transition whitespace-nowrap"
+          >
+            Reset Q
+          </button>
+        )}
       </div>
 
       {filtered.length === 0 ? (
