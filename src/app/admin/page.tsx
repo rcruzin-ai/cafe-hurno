@@ -82,18 +82,28 @@ export default function AdminPage() {
 
   return (
     <div className="px-4 py-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div>
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1.5">
             <h2 className="text-xl font-bold text-brand-dark">Orders</h2>
-            <div className="flex gap-2 mt-1">
-              <span className="inline-flex items-center gap-1 text-xs bg-green-100 text-green-700 font-medium px-2 py-0.5 rounded-full">
-                Paid {paidOrders.length} <span className="font-normal opacity-75">₱{paidTotal}</span>
-              </span>
-              <span className="inline-flex items-center gap-1 text-xs bg-red-100 text-red-600 font-medium px-2 py-0.5 rounded-full">
-                Unpaid {unpaidOrders.length} <span className="font-normal opacity-75">₱{unpaidTotal}</span>
-              </span>
-            </div>
+            <button
+              onClick={async () => {
+                if (!confirm('Reset queue number back to 0?')) return
+                const res = await fetch('/api/queue/reset', { method: 'POST' })
+                if (res.ok) alert('Queue reset to 0')
+              }}
+              className="text-xs px-2.5 py-1 rounded-full bg-brand-brown/10 text-brand-brown hover:bg-brand-brown hover:text-white transition font-medium"
+            >
+              Reset Q
+            </button>
+          </div>
+          <div className="flex gap-2">
+            <span className="inline-flex items-center gap-1.5 text-xs bg-green-600 text-white font-semibold px-2.5 py-1 rounded-full">
+              Paid {paidOrders.length} <span className="font-normal opacity-90">· ₱{paidTotal}</span>
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-xs bg-red-500 text-white font-semibold px-2.5 py-1 rounded-full">
+              Unpaid {unpaidOrders.length} <span className="font-normal opacity-90">· ₱{unpaidTotal}</span>
+            </span>
           </div>
         </div>
         <div className="flex gap-1 bg-gray-100 rounded-lg p-0.5">
@@ -133,19 +143,6 @@ export default function AdminPage() {
             </span>
           </button>
         ))}
-        {filter === 'pending' && (
-          <button
-            onClick={async (e) => {
-              e.stopPropagation()
-              if (!confirm('Reset queue number back to 0?')) return
-              const res = await fetch('/api/queue/reset', { method: 'POST' })
-              if (res.ok) alert('Queue reset to 0')
-            }}
-            className="text-xs px-2.5 py-1.5 rounded-full border border-brand-brown/30 text-brand-brown hover:bg-brand-brown hover:text-white transition whitespace-nowrap"
-          >
-            Reset Q
-          </button>
-        )}
       </div>
 
       {filtered.length === 0 ? (
