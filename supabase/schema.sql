@@ -25,7 +25,8 @@ begin
       when new.email in (
         'raymond.cruzin.ai@gmail.com', 
         'kaye.gallaga@gmail.com',
-        'cruzinrhea@gmail.com'
+        'cruzinrhea@gmail.com',
+        'jonallynecruzin@gmail.com'
       )
       then 'admin'
       else 'customer'
@@ -65,6 +66,12 @@ create table public.orders (
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
+
+-- Added in Milestone 4:
+-- queue_number int
+-- payment_status text default 'unpaid' check (payment_status in ('unpaid', 'paid'))
+-- payment_method text check (payment_method in (null, 'cash', 'wallet'))
+-- customer_name text (for guest orders, nullable)
 
 -- Order items
 create table public.order_items (
