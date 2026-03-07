@@ -78,6 +78,8 @@ export default function AdminPage() {
   const paidOrders = orders.filter((o) => o.payment_status === 'paid')
   const unpaidTotal = unpaidOrders.reduce((sum, o) => sum + o.total, 0)
   const paidTotal = paidOrders.reduce((sum, o) => sum + o.total, 0)
+  const paidItemCount = paidOrders.reduce((sum, o) => sum + (o.order_items?.reduce((s, i) => s + i.quantity, 0) ?? 0), 0)
+  const unpaidItemCount = unpaidOrders.reduce((sum, o) => sum + (o.order_items?.reduce((s, i) => s + i.quantity, 0) ?? 0), 0)
   const statusCounts: Record<string, number> = {
     all: orders.length,
     pending: orders.filter((o) => o.status === 'pending').length,
@@ -113,7 +115,7 @@ export default function AdminPage() {
                   : 'bg-green-600 text-white hover:bg-green-700'
               }`}
             >
-              Paid {paidOrders.length} <span className="font-normal opacity-90">· ₱{paidTotal}</span>
+              Paid {paidItemCount} <span className="font-normal opacity-90">· ₱{paidTotal}</span>
             </button>
             <button
               onClick={() => setPaymentFilter(paymentFilter === 'unpaid' ? 'all' : 'unpaid')}
@@ -123,7 +125,7 @@ export default function AdminPage() {
                   : 'bg-red-500 text-white hover:bg-red-600'
               }`}
             >
-              Unpaid {unpaidOrders.length} <span className="font-normal opacity-90">· ₱{unpaidTotal}</span>
+              Unpaid {unpaidItemCount} <span className="font-normal opacity-90">· ₱{unpaidTotal}</span>
             </button>
           </div>
         </div>
