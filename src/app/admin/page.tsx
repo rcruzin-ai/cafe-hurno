@@ -19,6 +19,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true)
   const [userRole, setUserRole] = useState<UserRole>('admin')
   const [confirmReset, setConfirmReset] = useState(false)
+  const [resetting, setResetting] = useState(false)
 
   const fetchOrders = async () => {
     const { data } = await supabase
@@ -96,37 +97,7 @@ export default function AdminPage() {
         <div>
           <div className="flex items-center gap-2 mb-1.5">
             <h2 className="text-xl font-bold text-brand-dark">Orders</h2>
-            {filter === 'pending' && !confirmReset && (
-              <button
-                onClick={() => setConfirmReset(true)}
-                className="text-xs px-2.5 py-1 rounded-full bg-brand-brown/10 text-brand-brown hover:bg-brand-brown hover:text-white transition font-medium"
-              >
-                Reset Q
-              </button>
-            )}
           </div>
-          {filter === 'pending' && confirmReset && (
-            <div className="mb-2 bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
-              <p className="text-xs text-gray-600 mb-2 font-medium">Reset queue back to #0?</p>
-              <div className="flex gap-2">
-                <button
-                  onClick={async () => {
-                    const res = await fetch('/api/queue/reset', { method: 'POST' })
-                    if (res.ok) { setConfirmReset(false); fetchOrders() }
-                  }}
-                  className="flex-1 bg-brand-dark text-white text-xs py-1.5 rounded-lg font-semibold hover:bg-brand-brown transition"
-                >
-                  Reset Back to #0
-                </button>
-                <button
-                  onClick={() => setConfirmReset(false)}
-                  className="flex-1 border border-gray-200 text-gray-500 text-xs py-1.5 rounded-lg hover:bg-gray-50 transition"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
           <div className="flex gap-2">
             <button
               onClick={() => setPaymentFilter(paymentFilter === 'paid' ? 'all' : 'paid')}
@@ -188,6 +159,49 @@ export default function AdminPage() {
           </button>
         ))}
       </div>
+
+      {filter === 'pending' && (
+        <div className={`mb-3 bg-white border border-gray-200 rounded-xl p-4 shadow-sm relative ${resetting ? 'opacity-60 pointer-events-none' : ''}`}>
+          {!confirmReset ? (
+            <button
+              onClick={() => setConfirmReset(true)}
+              className="w-full text-sm text-brand-brown font-medium py-1 hover:text-brand-dark transition"
+            >
+              Reset to #0
+            </button>
+          ) : (
+            <>
+              <p className="text-xs text-gray-500 mb-3 text-center">Reset all queue numbers back to #0?</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={async () => {
+                    setResetting(true)
+                    const res = await fetch('/api/queue/reset', { method: 'POST' })
+                    if (res.ok) { await fetchOrders() }
+                    setResetting(false)
+                    setConfirmReset(false)
+                  }}
+                  className="flex-1 bg-brand-dark text-white text-sm py-2 rounded-xl font-semibold hover:bg-brand-brown transition"
+                >
+                  {resetting ? 'Resetting...' : 'Reset to #0'}
+                </button>
+                <button
+                  onClick={() => setConfirmReset(false)}
+                  className="flex-1 border border-gray-200 text-gray-500 text-sm py-2 rounded-xl hover:bg-gray-50 transition"
+                >
+                  Cancel
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {resetting && (
+        <div className="fixed inset-0 bg-black/20 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-2xl px-6 py-4 shadow-lg text-sm text-brand-dark font-medium">Resetting queue...</div>
+        </div>
+      )}
 
       {filtered.length === 0 ? (
         <div className="text-center py-10 text-gray-400">No orders</div>
