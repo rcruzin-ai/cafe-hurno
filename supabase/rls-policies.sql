@@ -54,8 +54,26 @@ create policy "Customers can insert own order items"
 -- Feedback
 create policy "Feedback insert"
   on public.feedback for insert
-  with check (auth.uid() = customer_id);
+  with check (
+    auth.uid() = customer_id
+    and exists (
+      select 1 from public.orders
+      where id = order_id
+      and customer_id = auth.uid()
+    )
+  );
 
 create policy "Feedback select"
   on public.feedback for select
   using (auth.uid() = customer_id or public.is_admin());
+
+-- Profiles: prevent manual inserts (trigger handles creation via security definer)
+create policy "No manual profile inserts"
+  on public.profiles for insert
+  with check (false);
+
+-- Profiles: users can only update their own profile
+create policy "Users can update own profile"
+  on public.profiles for update
+  using (auth.uid() = id)
+  with check (auth.uid() = id);
