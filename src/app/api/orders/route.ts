@@ -1,48 +1,79 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
-export async function POST(request: Request) {
+interface OrderItemInput {
+  menu_item_id: string
+  variant: 'hot' | 'cold'
+  quantity: number
+}
+
+export async function POST(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  if (!user) {
-    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+  const { items } = await request.json() as { items: OrderItemInput[] }
+
+  if (!Array.isArray(items) || items.length === 0) {
+    return NextResponse.json({ error: 'items required' }, { status: 400 })
   }
 
-  const { items } = await request.json()
-
-  if (!items || items.length === 0) {
-    return NextResponse.json({ error: 'Cart is empty' }, { status: 400 })
+  // Validate each item
+  for (const item of items) {
+    if (!item.menu_item_id || !['hot', 'cold'].includes(item.variant)) {
+      return NextResponse.json({ error: 'Invalid item' }, { status: 400 })
+    }
+    if (typeof item.quantity !== 'number' || item.quantity < 1 || item.quantity > 20) {
+      return NextResponse.json({ error: 'Quantity must be 1–20' }, { status: 400 })
+    }
   }
 
-  const total = items.reduce(
-    (sum: number, i: { price: number; quantity: number }) => sum + i.price * i.quantity,
-    0
-  )
+  // Fetch real prices from DB — never trust client-supplied prices
+  const menuItemIds = Array.from(new Set(items.map(i => i.menu_item_id)))
+  const { data: menuItems, error: menuError } = await supabase
+    .from('menu_items')
+    .select('id, price, available')
+    .in('id', menuItemIds)
 
+  if (menuError || !menuItems) {
+    return NextResponse.json({ error: 'Failed to fetch menu items' }, { status: 500 })
+  }
+
+  // Check all items exist and are available
+  for (const item of items) {
+    const menuItem = menuItems.find(m => m.id === item.menu_item_id)
+    if (!menuItem) return NextResponse.json({ error: 'Menu item not found' }, { status: 404 })
+    if (!menuItem.available) return NextResponse.json({ error: 'Item is unavailable' }, { status: 400 })
+  }
+
+  // Compute total server-side from real DB prices
+  const priceMap = Object.fromEntries(menuItems.map(m => [m.id, m.price]))
+  const total = items.reduce((sum, item) => sum + priceMap[item.menu_item_id] * item.quantity, 0)
+
+  // Create order
   const { data: order, error: orderError } = await supabase
     .from('orders')
     .insert({ customer_id: user.id, total, status: 'pending' })
-    .select()
+    .select('id')
     .single()
 
-  if (orderError) {
-    return NextResponse.json({ error: orderError.message }, { status: 500 })
+  if (orderError || !order) {
+    return NextResponse.json({ error: 'Failed to create order' }, { status: 500 })
   }
 
-  const orderItems = items.map((i: { menu_item_id: string; variant: string; quantity: number; price: number }) => ({
+  // Insert order items with server-verified prices
+  const orderItems = items.map(item => ({
     order_id: order.id,
-    menu_item_id: i.menu_item_id,
-    variant: i.variant,
-    quantity: i.quantity,
-    price: i.price,
+    menu_item_id: item.menu_item_id,
+    variant: item.variant,
+    quantity: item.quantity,
+    price: priceMap[item.menu_item_id],
   }))
 
   const { error: itemsError } = await supabase.from('order_items').insert(orderItems)
-
   if (itemsError) {
-    return NextResponse.json({ error: itemsError.message }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to create order items' }, { status: 500 })
   }
 
-  return NextResponse.json({ order })
+  return NextResponse.json({ order_id: order.id })
 }

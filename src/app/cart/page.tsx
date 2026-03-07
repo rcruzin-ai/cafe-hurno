@@ -17,6 +17,7 @@ export default function CartPage() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(false)
   const [orderId, setOrderId] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   const supabase = createClient()
 
@@ -34,27 +35,30 @@ export default function CartPage() {
   const handlePlaceOrder = async () => {
     if (!user) return handleLogin()
     setLoading(true)
-
-    const orderItems = items.map((i) => ({
-      menu_item_id: i.menuItem.id,
-      variant: i.variant,
-      quantity: i.quantity,
-      price: i.menuItem.price,
-    }))
+    setError(null)
 
     const res = await fetch('/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items: orderItems }),
+      body: JSON.stringify({
+        items: items.map(item => ({
+          menu_item_id: item.menuItem.id,
+          variant: item.variant,
+          quantity: item.quantity,
+        })),
+      }),
     })
 
     const data = await res.json()
-    setLoading(false)
-
-    if (data.order) {
-      setOrderId(data.order.id)
-      clearCart()
+    if (!res.ok || !data.order_id) {
+      setError(data.error || 'Failed to place order')
+      setLoading(false)
+      return
     }
+
+    clearCart()
+    setOrderId(data.order_id)
+    setLoading(false)
   }
 
   if (orderId) {
@@ -92,6 +96,9 @@ export default function CartPage() {
               <span className="text-gray-500">Total</span>
               <span className="font-bold text-lg text-brand-dark">₱{getTotal()}</span>
             </div>
+            {error && (
+              <p className="text-red-500 text-sm mb-3">{error}</p>
+            )}
             <button
               onClick={handlePlaceOrder}
               disabled={loading}
