@@ -14,6 +14,7 @@ export default function AdminPage() {
   const supabase = createClient()
   const [orders, setOrders] = useState<OrderWithItems[]>([])
   const [filter, setFilter] = useState<OrderStatus | 'all'>('all')
+  const [paymentFilter, setPaymentFilter] = useState<'all' | 'paid' | 'unpaid'>('all')
   const [view, setView] = useState<ViewMode>('cards')
   const [loading, setLoading] = useState(true)
   const [userRole, setUserRole] = useState<UserRole>('admin')
@@ -52,7 +53,13 @@ export default function AdminPage() {
     }
   }, [supabase])
 
-  const filtered = (filter === 'all' ? orders : orders.filter((o) => o.status === filter))
+  const filtered = orders
+    .filter((o) => filter === 'all' || o.status === filter)
+    .filter((o) => {
+      if (paymentFilter === 'paid') return o.payment_status === 'paid'
+      if (paymentFilter === 'unpaid') return (o.payment_status || 'unpaid') === 'unpaid'
+      return true
+    })
     .slice()
     .sort((a, b) => {
       // Primary: queue number DESC (no queue → last)
@@ -98,12 +105,26 @@ export default function AdminPage() {
             </button>
           </div>
           <div className="flex gap-2">
-            <span className="inline-flex items-center gap-1.5 text-xs bg-green-600 text-white font-semibold px-2.5 py-1 rounded-full">
+            <button
+              onClick={() => setPaymentFilter(paymentFilter === 'paid' ? 'all' : 'paid')}
+              className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full transition ${
+                paymentFilter === 'paid'
+                  ? 'bg-green-700 text-white ring-2 ring-green-400 ring-offset-1'
+                  : 'bg-green-600 text-white hover:bg-green-700'
+              }`}
+            >
               Paid {paidOrders.length} <span className="font-normal opacity-90">· ₱{paidTotal}</span>
-            </span>
-            <span className="inline-flex items-center gap-1.5 text-xs bg-red-500 text-white font-semibold px-2.5 py-1 rounded-full">
+            </button>
+            <button
+              onClick={() => setPaymentFilter(paymentFilter === 'unpaid' ? 'all' : 'unpaid')}
+              className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full transition ${
+                paymentFilter === 'unpaid'
+                  ? 'bg-red-600 text-white ring-2 ring-red-400 ring-offset-1'
+                  : 'bg-red-500 text-white hover:bg-red-600'
+              }`}
+            >
               Unpaid {unpaidOrders.length} <span className="font-normal opacity-90">· ₱{unpaidTotal}</span>
-            </span>
+            </button>
           </div>
         </div>
         <div className="flex gap-1 bg-gray-100 rounded-lg p-0.5">
