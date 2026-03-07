@@ -6,11 +6,14 @@ export async function GET(request: Request) {
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/menu'
 
+  // Only allow relative paths — prevent open redirect to external URLs
+  const safePath = next.startsWith('/') && !next.startsWith('//') ? next : '/menu'
+
   if (code) {
     const supabase = await createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
-      return NextResponse.redirect(`${origin}${next}`)
+      return NextResponse.redirect(`${origin}${safePath}`)
     }
   }
 
