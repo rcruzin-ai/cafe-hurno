@@ -7,7 +7,7 @@ import { useState } from 'react'
 
 const STATUS_FLOW: OrderStatus[] = ['pending', 'completed']
 
-export default function AdminOrderRow({ order, userRole }: { order: OrderWithItems, userRole: UserRole }) {
+export default function AdminOrderRow({ order, userRole, onStatusChange }: { order: OrderWithItems, userRole: UserRole, onStatusChange?: () => void }) {
   const [status, setStatus] = useState<OrderStatus>(order.status)
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>(order.payment_status || 'unpaid')
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(order.payment_method || null)
@@ -34,6 +34,7 @@ export default function AdminOrderRow({ order, userRole }: { order: OrderWithIte
 
     if (!error) {
       setStatus(nextStatus)
+      onStatusChange?.()
     }
   }
 
@@ -43,7 +44,10 @@ export default function AdminOrderRow({ order, userRole }: { order: OrderWithIte
       .from('orders')
       .update({ status: 'voided' })
       .eq('id', order.id)
-    if (!error) setStatus('voided')
+    if (!error) {
+      setStatus('voided')
+      onStatusChange?.()
+    }
   }
 
   const handleDelete = async () => {
@@ -52,7 +56,10 @@ export default function AdminOrderRow({ order, userRole }: { order: OrderWithIte
       .from('orders')
       .delete()
       .eq('id', order.id)
-    if (!error) setDeleted(true)
+    if (!error) {
+      setDeleted(true)
+      onStatusChange?.()
+    }
   }
 
   const handleSaveName = async () => {
@@ -78,6 +85,7 @@ export default function AdminOrderRow({ order, userRole }: { order: OrderWithIte
     if (res.ok) {
       setPaymentStatus('paid')
       setPaymentMethod(method)
+      onStatusChange?.()
     }
   }
 
@@ -94,15 +102,22 @@ export default function AdminOrderRow({ order, userRole }: { order: OrderWithIte
     if (res.ok) {
       setPaymentStatus('unpaid')
       setPaymentMethod(null)
+      onStatusChange?.()
     }
   }
 
   return (
-    <div className={`bg-white rounded-xl p-4 shadow-sm ${isVoided ? 'opacity-60' : ''}`}>
+    <div className={`bg-white rounded-xl p-4 shadow-sm border-l-2 ${
+  isVoided ? 'opacity-60 border-l-transparent' :
+  status === 'pending' ? 'border-l-brand-brown' :
+  status === 'completed' ? 'border-l-gray-200' : 'border-l-transparent'
+}`}>
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          {order.queue_number && (
-            <span className="text-lg font-bold text-brand-dark">#{order.queue_number}</span>
+          {status === 'pending' && (
+            <div className={`flex items-center justify-center w-10 h-10 rounded-full text-sm font-bold shrink-0 ${order.queue_number ? 'bg-brand-dark text-white' : 'bg-gray-100 text-gray-400'}`}>
+              {order.queue_number ? `#${order.queue_number}` : '—'}
+            </div>
           )}
           <div>
             {isSuperAdmin && !isVoided && editingName ? (
@@ -185,13 +200,13 @@ export default function AdminOrderRow({ order, userRole }: { order: OrderWithIte
               <>
                 <button
                   onClick={() => handlePayment('cash')}
-                  className="bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-medium hover:bg-green-100 transition"
+                  className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-full text-xs font-medium hover:bg-brand-dark hover:text-white transition"
                 >
                   Cash
                 </button>
                 <button
                   onClick={() => handlePayment('wallet')}
-                  className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-medium hover:bg-blue-100 transition"
+                  className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-full text-xs font-medium hover:bg-brand-dark hover:text-white transition"
                 >
                   E-Wallet
                 </button>
@@ -202,17 +217,17 @@ export default function AdminOrderRow({ order, userRole }: { order: OrderWithIte
                 <button onClick={handleUndoPayment} className="ml-1 text-red-400 underline">undo</button>
               </span>
             )}
-            {nextStatus && (
-              <button
-                onClick={handleAdvance}
-                className="bg-brand-pink-dark text-white px-4 py-1.5 rounded-full text-xs font-medium hover:bg-brand-dark transition"
-              >
-                Mark as {ORDER_STATUS_LABELS[nextStatus]}
-              </button>
-            )}
           </div>
         )}
       </div>
+      {!isVoided && nextStatus && (
+        <button
+          onClick={handleAdvance}
+          className="w-full mt-2 bg-brand-dark text-white py-2 rounded-xl text-xs font-semibold hover:bg-brand-brown transition"
+        >
+          Mark as {ORDER_STATUS_LABELS[nextStatus]}
+        </button>
+      )}
 
       {order.feedback && order.feedback.length > 0 && (
         <div className="mt-3 border-t pt-2">
