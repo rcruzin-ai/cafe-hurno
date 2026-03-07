@@ -17,6 +17,8 @@ export default function CartPage() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(false)
   const [orderId, setOrderId] = useState<string | null>(null)
+  const [queueNumber, setQueueNumber] = useState<number | null>(null)
+  const [guestName, setGuestName] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   const supabase = createClient()
@@ -33,7 +35,10 @@ export default function CartPage() {
   }
 
   const handlePlaceOrder = async () => {
-    if (!user) return handleLogin()
+    if (!user && !guestName.trim()) {
+      setError('Please enter your name to place an order')
+      return
+    }
     setLoading(true)
     setError(null)
 
@@ -47,6 +52,7 @@ export default function CartPage() {
             variant: item.variant,
             quantity: item.quantity,
           })),
+          ...(!user ? { customer_name: guestName.trim() } : {}),
         }),
       })
 
@@ -59,16 +65,16 @@ export default function CartPage() {
 
       clearCart()
       setOrderId(data.order_id)
+      setQueueNumber(data.queue_number)
       setLoading(false)
     } catch {
       setError('Network error. Please try again.')
       setLoading(false)
-      return
     }
   }
 
   if (orderId) {
-    return <OrderSuccess orderId={orderId} />
+    return <OrderSuccess orderId={orderId} queueNumber={queueNumber} isGuest={!user} />
   }
 
   return (
@@ -105,13 +111,34 @@ export default function CartPage() {
             {error && (
               <p className="text-red-500 text-sm mb-3">{error}</p>
             )}
+            {!user && (
+              <div className="mb-3">
+                <label className="text-xs text-gray-500 mb-1 block">Your name</label>
+                <input
+                  type="text"
+                  value={guestName}
+                  onChange={(e) => setGuestName(e.target.value)}
+                  placeholder="Enter your name"
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-pink"
+                  maxLength={50}
+                />
+              </div>
+            )}
             <button
               onClick={handlePlaceOrder}
               disabled={loading}
               className="w-full bg-brand-pink-dark text-white py-3 rounded-full font-semibold hover:bg-brand-dark transition disabled:opacity-50"
             >
-              {loading ? 'Placing Order...' : user ? 'Place Order' : 'Sign in to Order'}
+              {loading ? 'Placing Order...' : user ? 'Place Order' : 'Place Order as Guest'}
             </button>
+            {!user && (
+              <button
+                onClick={handleLogin}
+                className="mt-2 text-brand-muted text-xs underline w-full text-center"
+              >
+                Or sign in with Google for order history
+              </button>
+            )}
           </div>
         </>
       )}
@@ -119,7 +146,7 @@ export default function CartPage() {
   )
 }
 
-function OrderSuccess({ orderId }: { orderId: string }) {
+function OrderSuccess({ orderId, queueNumber, isGuest }: { orderId: string; queueNumber: number | null; isGuest: boolean }) {
   const router = useRouter()
   const [rating, setRating] = useState(0)
   const [comment, setComment] = useState('')
@@ -144,9 +171,13 @@ function OrderSuccess({ orderId }: { orderId: string }) {
     <div className="px-4 py-6 text-center">
       <div className="text-5xl mb-4">✅</div>
       <h2 className="text-xl font-bold text-brand-dark mb-2">Order Placed!</h2>
+      {queueNumber && (
+        <div className="text-6xl font-bold text-brand-dark mb-2">#{queueNumber}</div>
+      )}
+      <p className="text-sm text-gray-500 mb-1">Your queue number</p>
       <p className="text-sm text-gray-500 mb-6">Your order is being prepared</p>
 
-      {!submitted ? (
+      {!isGuest && !submitted ? (
         <div className="bg-white rounded-xl p-4 shadow-sm text-left mt-6">
           <h3 className="font-semibold text-brand-dark mb-3">How was your experience?</h3>
           <div className="flex gap-2 mb-3">
@@ -174,16 +205,27 @@ function OrderSuccess({ orderId }: { orderId: string }) {
             Submit Feedback
           </button>
         </div>
+      ) : isGuest ? (
+        <p className="text-sm text-gray-400 mt-4">Sign in to leave feedback</p>
       ) : (
         <p className="text-sm text-green-600 mt-4">Thanks for your feedback!</p>
       )}
 
-      <button
-        onClick={() => router.push('/orders')}
-        className="mt-6 text-brand-brown underline text-sm"
-      >
-        Track your order →
-      </button>
+      {isGuest ? (
+        <button
+          onClick={() => router.push('/menu')}
+          className="mt-6 text-brand-brown underline text-sm"
+        >
+          Order more
+        </button>
+      ) : (
+        <button
+          onClick={() => router.push('/orders')}
+          className="mt-6 text-brand-brown underline text-sm"
+        >
+          Track your order →
+        </button>
+      )}
     </div>
   )
 }
