@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import AuthHomeButtons from '@/components/AuthHomeButtons'
+import FlushyMascot from '@/components/FlushyMascot'
 
 export default function Home() {
   return (
@@ -16,17 +17,8 @@ export default function Home() {
 
       <div className="flex-1 flex flex-col items-center justify-center px-6 text-center relative z-10 pb-6">
         {/* Mascot with bounce animation */}
-        <div className="animate-mascot-bounce mb-4">
-          <div className="relative">
-            <Image
-              src="/images/flushy.png"
-              alt="Cafe Hurno Mascot"
-              width={200}
-              height={200}
-              className="drop-shadow-lg"
-              priority
-            />
-          </div>
+        <div className="animate-mascot-bounce mb-4 flex justify-center">
+          <FlushyMascot />
         </div>
 
         {/* Logo badge */}
