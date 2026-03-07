@@ -18,6 +18,7 @@ export default function AdminPage() {
   const [view, setView] = useState<ViewMode>('cards')
   const [loading, setLoading] = useState(true)
   const [userRole, setUserRole] = useState<UserRole>('admin')
+  const [confirmReset, setConfirmReset] = useState(false)
 
   const fetchOrders = async () => {
     const { data } = await supabase
@@ -95,17 +96,37 @@ export default function AdminPage() {
         <div>
           <div className="flex items-center gap-2 mb-1.5">
             <h2 className="text-xl font-bold text-brand-dark">Orders</h2>
-            <button
-              onClick={async () => {
-                if (!confirm('Reset queue number back to 0?')) return
-                const res = await fetch('/api/queue/reset', { method: 'POST' })
-                if (res.ok) alert('Queue reset to 0')
-              }}
-              className="text-xs px-2.5 py-1 rounded-full bg-brand-brown/10 text-brand-brown hover:bg-brand-brown hover:text-white transition font-medium"
-            >
-              Reset Q
-            </button>
+            {filter === 'pending' && !confirmReset && (
+              <button
+                onClick={() => setConfirmReset(true)}
+                className="text-xs px-2.5 py-1 rounded-full bg-brand-brown/10 text-brand-brown hover:bg-brand-brown hover:text-white transition font-medium"
+              >
+                Reset Q
+              </button>
+            )}
           </div>
+          {filter === 'pending' && confirmReset && (
+            <div className="mb-2 bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
+              <p className="text-xs text-gray-600 mb-2 font-medium">Reset queue back to #0?</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={async () => {
+                    const res = await fetch('/api/queue/reset', { method: 'POST' })
+                    if (res.ok) { setConfirmReset(false); fetchOrders() }
+                  }}
+                  className="flex-1 bg-brand-dark text-white text-xs py-1.5 rounded-lg font-semibold hover:bg-brand-brown transition"
+                >
+                  Reset Back to #0
+                </button>
+                <button
+                  onClick={() => setConfirmReset(false)}
+                  className="flex-1 border border-gray-200 text-gray-500 text-xs py-1.5 rounded-lg hover:bg-gray-50 transition"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
           <div className="flex gap-2">
             <button
               onClick={() => setPaymentFilter(paymentFilter === 'paid' ? 'all' : 'paid')}
@@ -153,7 +174,7 @@ export default function AdminPage() {
         {FILTERS.map((f) => (
           <button
             key={f}
-            onClick={() => setFilter(f)}
+            onClick={() => { setFilter(f); setConfirmReset(false) }}
             className={`text-xs px-3 py-1.5 rounded-full font-medium whitespace-nowrap transition flex items-center gap-1.5 ${
               filter === f
                 ? 'bg-brand-brown text-white'
