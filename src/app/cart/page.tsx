@@ -15,17 +15,27 @@ export default function CartPage() {
   const clearCart = useCartStore((s) => s.clearCart)
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
+  const [userRole, setUserRole] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [orderId, setOrderId] = useState<string | null>(null)
   const [queueNumber, setQueueNumber] = useState<number | null>(null)
   const [guestName, setGuestName] = useState('')
+  const [adminCustomerName, setAdminCustomerName] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   const supabase = createClient()
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => setUser(user))
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      setUser(user)
+      if (user) {
+        const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+        if (profile) setUserRole(profile.role)
+      }
+    })
   }, [supabase])
+
+  const isAdmin = userRole === 'admin' || userRole === 'super_admin'
 
   const handleLogin = async () => {
     await supabase.auth.signInWithOAuth({
@@ -37,6 +47,10 @@ export default function CartPage() {
   const handlePlaceOrder = async () => {
     if (!user && !guestName.trim()) {
       setError('Please enter your name to place an order')
+      return
+    }
+    if (isAdmin && !adminCustomerName.trim()) {
+      setError('Please enter the customer name')
       return
     }
     setLoading(true)
@@ -52,7 +66,7 @@ export default function CartPage() {
             variant: item.variant,
             quantity: item.quantity,
           })),
-          ...(!user ? { customer_name: guestName.trim() } : {}),
+          ...(isAdmin ? { customer_name: adminCustomerName.trim() } : !user ? { customer_name: guestName.trim() } : {}),
         }),
       })
 
@@ -79,7 +93,10 @@ export default function CartPage() {
 
   return (
     <div className="px-4 py-6">
-      <h1 className="text-2xl font-bold text-brand-dark mb-4">Your Cart</h1>
+      <h1 className="text-2xl font-bold text-brand-dark mb-4">
+        Your Cart
+        {items.length > 0 && <span className="text-base font-normal text-brand-muted ml-2">({items.length} item{items.length !== 1 ? 's' : ''})</span>}
+      </h1>
 
       {items.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
@@ -103,13 +120,26 @@ export default function CartPage() {
             ))}
           </div>
 
-          <div className="mt-6 bg-white rounded-xl p-4 shadow-sm">
-            <div className="flex justify-between text-sm mb-3">
-              <span className="text-gray-500">Total</span>
-              <span className="font-bold text-lg text-brand-dark">₱{getTotal()}</span>
+          <div className="mt-5 bg-white rounded-2xl p-4 shadow-sm border border-gray-100/60">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-sm text-gray-500">Order total</span>
+              <span className="font-bold text-xl text-brand-dark">₱{getTotal()}</span>
             </div>
             {error && (
               <p className="text-red-500 text-sm mb-3">{error}</p>
+            )}
+            {isAdmin && (
+              <div className="mb-3">
+                <label className="text-xs text-gray-500 mb-1 block">Customer name <span className="text-red-400">*</span></label>
+                <input
+                  type="text"
+                  value={adminCustomerName}
+                  onChange={(e) => setAdminCustomerName(e.target.value)}
+                  placeholder="Enter customer name"
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-pink"
+                  maxLength={50}
+                />
+              </div>
             )}
             {!user && (
               <div className="mb-3">
@@ -126,10 +156,10 @@ export default function CartPage() {
             )}
             <button
               onClick={handlePlaceOrder}
-              disabled={loading || (!user && !guestName.trim())}
-              className="w-full bg-brand-pink-dark text-white py-3 rounded-full font-semibold hover:bg-brand-dark transition disabled:opacity-50"
+              disabled={loading || (!user && !guestName.trim()) || (isAdmin && !adminCustomerName.trim())}
+              className="w-full bg-brand-dark text-white py-3.5 rounded-2xl font-semibold hover:bg-brand-brown transition disabled:opacity-40 text-sm"
             >
-              {loading ? 'Placing Order...' : user ? 'Place Order' : 'Place Order as Guest'}
+              {loading ? 'Placing Order...' : isAdmin ? `Place Order for ${adminCustomerName.trim() || 'Customer'}` : user ? 'Place Order' : 'Place Order as Guest'}
             </button>
             {!user && (
               <button
