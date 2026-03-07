@@ -22,7 +22,11 @@ begin
     coalesce(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name', ''),
     coalesce(new.raw_user_meta_data->>'avatar_url', new.raw_user_meta_data->>'picture', ''),
     case
-      when new.email in ('raymond.cruzin.ai@gmail.com', 'kaye.gallaga@gmail.com')
+      when new.email in (
+        'raymond.cruzin.ai@gmail.com', 
+        'kaye.gallaga@gmail.com',
+        'cruzinrhea@gmail.com'
+      )
       then 'admin'
       else 'customer'
     end
@@ -30,6 +34,10 @@ begin
   return new;
 end;
 $$ language plpgsql security definer;
+
+
+-- update public.profiles set role = 'admin' where email = 'cruzinrhea@gmail.com';
+
 
 create trigger on_auth_user_created
   after insert on auth.users
