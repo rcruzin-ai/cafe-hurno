@@ -72,14 +72,24 @@ export default function OrdersPage() {
     )
   }
 
+  const pendingCount = orders.filter(o => o.status === 'pending').length
+
   return (
-    <div className="px-4 py-6">
-      <h1 className="text-2xl font-bold text-brand-dark mb-4">Your Orders</h1>
+    <div className="px-4 py-5">
+      <div className="mb-5">
+        <h1 className="text-2xl font-bold text-brand-dark">Your Orders</h1>
+        {pendingCount > 0 && (
+          <p className="text-sm text-brand-muted mt-0.5">
+            <span className="text-brand-brown font-medium">{pendingCount}</span> order{pendingCount !== 1 ? 's' : ''} being prepared
+          </p>
+        )}
+      </div>
 
       {orders.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
-          <p className="text-4xl mb-3">📋</p>
-          <p>No orders yet</p>
+          <div className="text-5xl mb-4 opacity-30">☕</div>
+          <p className="font-medium text-gray-500">No orders yet</p>
+          <p className="text-sm mt-1">Your order history will appear here</p>
         </div>
       ) : (
         <div className="space-y-3">
