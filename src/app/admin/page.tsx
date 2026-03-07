@@ -56,9 +56,22 @@ export default function AdminPage() {
   return (
     <div className="px-4 py-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-brand-dark">
-          Orders ({orders.length})
-        </h2>
+        <div className="flex items-center gap-3">
+          <h2 className="text-xl font-bold text-brand-dark">
+            Orders ({orders.length})
+          </h2>
+          <button
+            onClick={async () => {
+              if (!confirm('Reset queue number back to 0?')) return
+              const res = await fetch('/api/queue/reset', { method: 'POST' })
+              if (res.ok) alert('Queue reset to 0')
+            }}
+            className="text-xs text-gray-400 hover:text-red-500 transition"
+            title="Reset queue counter"
+          >
+            Reset Queue
+          </button>
+        </div>
         <div className="flex gap-1 bg-gray-100 rounded-lg p-0.5">
           <button
             onClick={() => setView('cards')}
