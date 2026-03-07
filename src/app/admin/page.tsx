@@ -18,39 +18,32 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true)
   const [userRole, setUserRole] = useState<UserRole>('admin')
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      const { data } = await supabase
-        .from('orders')
-        .select('*, order_items(*, menu_items(*)), profiles(*), feedback(*)')
-        .order('created_at', { ascending: false })
+  const fetchOrders = async () => {
+    const { data } = await supabase
+      .from('orders')
+      .select('*, order_items(*, menu_items(*)), profiles(*), feedback(*)')
+      .order('created_at', { ascending: false })
 
-      setOrders((data as OrderWithItems[]) || [])
-      setLoading(false)
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .single()
-        if (profile) setUserRole(profile.role as UserRole)
-      }
-    }
+    setOrders((data as OrderWithItems[]) || [])
+    setLoading(false)
+  }
+
+  useEffect(() => {
     fetchOrders()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        supabase.from('profiles').select('role').eq('id', user.id).single().then(({ data: profile }) => {
+          if (profile) setUserRole(profile.role as UserRole)
+        })
+      }
+    })
 
     const channel = supabase
       .channel('admin-orders')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'orders' },
-        async () => {
-          const { data } = await supabase
-            .from('orders')
-            .select('*, order_items(*, menu_items(*)), profiles(*), feedback(*)')
-            .order('created_at', { ascending: false })
-          setOrders((data as OrderWithItems[]) || [])
-        }
+        () => { fetchOrders() }
       )
       .subscribe()
 
@@ -59,7 +52,31 @@ export default function AdminPage() {
     }
   }, [supabase])
 
-  const filtered = filter === 'all' ? orders : orders.filter((o) => o.status === filter)
+  const filtered = (filter === 'all' ? orders : orders.filter((o) => o.status === filter))
+    .slice()
+    .sort((a, b) => {
+      // Primary: queue number DESC (no queue → last)
+      const aQ = a.queue_number ?? -1
+      const bQ = b.queue_number ?? -1
+      if (aQ !== bQ) return bQ - aQ
+      // Tiebreaker: unpaid first ASC, paid last DESC
+      const aPaid = (a.payment_status || 'unpaid') === 'paid'
+      const bPaid = (b.payment_status || 'unpaid') === 'paid'
+      if (aPaid !== bPaid) return aPaid ? 1 : -1
+      if (!aPaid) return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    })
+
+  const unpaidOrders = orders.filter((o) => (o.payment_status || 'unpaid') === 'unpaid' && o.status !== 'voided')
+  const paidOrders = orders.filter((o) => o.payment_status === 'paid')
+  const unpaidTotal = unpaidOrders.reduce((sum, o) => sum + o.total, 0)
+  const paidTotal = paidOrders.reduce((sum, o) => sum + o.total, 0)
+  const statusCounts: Record<string, number> = {
+    all: orders.length,
+    pending: orders.filter((o) => o.status === 'pending').length,
+    completed: orders.filter((o) => o.status === 'completed').length,
+    voided: orders.filter((o) => o.status === 'voided').length,
+  }
 
   if (loading) return <div className="p-6 text-center text-gray-400">Loading orders...</div>
 
@@ -67,19 +84,32 @@ export default function AdminPage() {
     <div className="px-4 py-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <h2 className="text-xl font-bold text-brand-dark">
-            Orders ({orders.length})
-          </h2>
+          <div>
+            <h2 className="text-xl font-bold text-brand-dark">Orders</h2>
+            <div className="flex gap-3 mt-1">
+              <div className="text-xs">
+                <span className="text-gray-400">Paid </span>
+                <span className="font-semibold text-brand-dark">{paidOrders.length}</span>
+                <span className="text-gray-400 ml-1">₱{paidTotal}</span>
+              </div>
+              <span className="text-gray-200">|</span>
+              <div className="text-xs">
+                <span className="text-gray-400">Unpaid </span>
+                <span className="font-semibold text-brand-dark">{unpaidOrders.length}</span>
+                <span className="text-gray-400 ml-1">₱{unpaidTotal}</span>
+              </div>
+            </div>
+          </div>
           <button
             onClick={async () => {
               if (!confirm('Reset queue number back to 0?')) return
               const res = await fetch('/api/queue/reset', { method: 'POST' })
               if (res.ok) alert('Queue reset to 0')
             }}
-            className="text-xs text-gray-400 hover:text-red-500 transition"
+            className="text-xs px-2.5 py-1 rounded-full border border-brand-brown/30 text-brand-brown hover:bg-brand-brown hover:text-white transition"
             title="Reset queue counter"
           >
-            Reset Queue
+            Reset Q
           </button>
         </div>
         <div className="flex gap-1 bg-gray-100 rounded-lg p-0.5">
@@ -107,13 +137,16 @@ export default function AdminPage() {
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`text-xs px-3 py-1.5 rounded-full font-medium whitespace-nowrap transition ${
+            className={`text-xs px-3 py-1.5 rounded-full font-medium whitespace-nowrap transition flex items-center gap-1.5 ${
               filter === f
                 ? 'bg-brand-brown text-white'
                 : 'bg-white text-gray-600 border'
             }`}
           >
             {f === 'all' ? 'All' : ORDER_STATUS_LABELS[f]}
+            <span className={`text-[10px] font-semibold ${filter === f ? 'opacity-75' : 'text-gray-400'}`}>
+              {statusCounts[f]}
+            </span>
           </button>
         ))}
       </div>
@@ -123,7 +156,7 @@ export default function AdminPage() {
       ) : view === 'cards' ? (
         <div className="space-y-3">
           {filtered.map((order) => (
-            <AdminOrderRow key={order.id} order={order} userRole={userRole} />
+            <AdminOrderRow key={order.id} order={order} userRole={userRole} onStatusChange={fetchOrders} />
           ))}
         </div>
       ) : (

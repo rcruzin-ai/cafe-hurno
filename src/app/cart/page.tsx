@@ -202,7 +202,7 @@ function OrderSuccess({ orderId, queueNumber, isGuest }: { orderId: string; queu
       <div className="text-5xl mb-4">✅</div>
       <h2 className="text-xl font-bold text-brand-dark mb-2">Order Placed!</h2>
       {queueNumber && (
-        <div className="text-6xl font-bold text-brand-dark mb-2">#{queueNumber}</div>
+        <div className="text-7xl font-bold text-brand-dark mb-2">#{queueNumber}</div>
       )}
       <p className="text-sm text-gray-500 mb-1">Your queue number</p>
       <p className="text-sm text-gray-500 mb-6">Your order is being prepared</p>
