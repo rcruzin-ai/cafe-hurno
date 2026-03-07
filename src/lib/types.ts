@@ -1,5 +1,5 @@
-export type UserRole = 'customer' | 'admin'
-export type OrderStatus = 'pending' | 'preparing' | 'ready' | 'completed'
+export type UserRole = 'customer' | 'admin' | 'super_admin'
+export type OrderStatus = 'pending' | 'preparing' | 'ready' | 'completed' | 'voided'
 export type DrinkVariant = 'hot' | 'cold'
 export type PaymentStatus = 'unpaid' | 'paid'
 export type PaymentMethod = 'cash' | 'wallet' | null
@@ -21,6 +21,7 @@ export interface MenuItem {
   hot_size_oz: number
   cold_size_oz: number
   available: boolean
+  hot_available: boolean
   created_at: string
 }
 

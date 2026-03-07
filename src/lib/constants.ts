@@ -3,6 +3,7 @@ export const ORDER_STATUS_LABELS: Record<string, string> = {
   preparing: 'Preparing',
   ready: 'Ready for Pickup',
   completed: 'Completed',
+  voided: 'Voided',
 }
 
 export const ORDER_STATUS_COLORS: Record<string, string> = {
@@ -10,6 +11,7 @@ export const ORDER_STATUS_COLORS: Record<string, string> = {
   preparing: 'bg-blue-50 text-blue-700',
   ready: 'bg-green-50 text-green-700',
   completed: 'bg-gray-100 text-gray-500',
+  voided: 'bg-red-100 text-red-400 line-through',
 }
 
 export const ADMIN_EMAIL = 'raymond.cruzin.ai@gmail.com'
