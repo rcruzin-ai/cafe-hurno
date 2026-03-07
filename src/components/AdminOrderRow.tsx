@@ -5,7 +5,7 @@ import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS, PAYMENT_STATUS_LABELS, PAYMEN
 import type { OrderWithItems, OrderStatus, PaymentStatus, PaymentMethod, UserRole } from '@/lib/types'
 import { useState } from 'react'
 
-const STATUS_FLOW: OrderStatus[] = ['pending', 'preparing', 'ready', 'completed']
+const STATUS_FLOW: OrderStatus[] = ['pending', 'completed']
 
 export default function AdminOrderRow({ order, userRole }: { order: OrderWithItems, userRole: UserRole }) {
   const [status, setStatus] = useState<OrderStatus>(order.status)
@@ -34,13 +34,6 @@ export default function AdminOrderRow({ order, userRole }: { order: OrderWithIte
 
     if (!error) {
       setStatus(nextStatus)
-      if (nextStatus === 'preparing') {
-        fetch('/api/inventory/deduct', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ order_id: order.id }),
-        }).catch(console.error)
-      }
     }
   }
 

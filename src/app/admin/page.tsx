@@ -8,7 +8,7 @@ import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS, PAYMENT_STATUS_LABELS, PAYMEN
 
 type ViewMode = 'cards' | 'table'
 
-const FILTERS: (OrderStatus | 'all')[] = ['all', 'pending', 'preparing', 'ready', 'completed', 'voided']
+const FILTERS: (OrderStatus | 'all')[] = ['all', 'pending', 'completed', 'voided']
 
 export default function AdminPage() {
   const supabase = createClient()
