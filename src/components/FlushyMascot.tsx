@@ -25,22 +25,22 @@ export default function FlushyMascot() {
   if (pick === 3) {
     // All 3 together — flushy3 center front, flushy2 left, flushy1 right
     return (
-      <div className="relative h-[200px] w-[260px]">
-        {/* flushy2 (waving) — left, peeking from behind center */}
+      <div className="relative h-[200px] w-[300px]">
+        {/* flushy2 (waving) — left */}
         <Image
           src="/images/flushy2.png"
           alt="Flushy waving"
           width={145}
           height={145}
-          className="drop-shadow-lg absolute bottom-0 left-[10px] z-10"
+          className="drop-shadow-lg absolute bottom-0 left-0 z-10"
         />
-        {/* flushy1 (standing) — right, peeking from behind center */}
+        {/* flushy1 (standing) — right */}
         <Image
           src="/images/flushy.png"
           alt="Flushy mascot"
           width={145}
           height={145}
-          className="drop-shadow-lg absolute bottom-0 right-[10px] z-10"
+          className="drop-shadow-lg absolute bottom-0 right-0 z-10"
         />
         {/* flushy3 (coffee) — center, in front */}
         <Image
