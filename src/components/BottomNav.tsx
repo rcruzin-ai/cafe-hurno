@@ -20,7 +20,7 @@ export default function BottomNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-50">
       <div className="flex justify-around items-center h-16 max-w-md mx-auto">
-        {navItems.map((item) => {
+        {navItems.slice(0, 2).map((item) => {
           const isActive = pathname.startsWith(item.href)
           return (
             <Link
@@ -38,6 +38,35 @@ export default function BottomNav() {
                   {itemCount > 9 ? '9+' : itemCount}
                 </span>
               )}
+              <span>{item.label}</span>
+            </Link>
+          )
+        })}
+        <Link
+          href="/pay"
+          className={`flex flex-col items-center gap-0.5 text-[10px] ${pathname === '/pay' ? 'text-brand-brown' : 'text-gray-400'}`}
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <rect x="3" y="3" width="6" height="6" rx="0.5" strokeWidth="1.5"/>
+            <rect x="15" y="3" width="6" height="6" rx="0.5" strokeWidth="1.5"/>
+            <rect x="3" y="15" width="6" height="6" rx="0.5" strokeWidth="1.5"/>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 15h2M15 19h2M19 15v2M19 21v-2M21 15h-2M21 19h-2" />
+          </svg>
+          Pay
+        </Link>
+        {navItems.slice(2).map((item) => {
+          const isActive = pathname.startsWith(item.href)
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`relative flex flex-col items-center gap-0.5 text-[10px] font-medium transition ${
+                isActive ? 'text-brand-brown' : 'text-gray-400'
+              }`}
+            >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={isActive ? 2 : 1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
+              </svg>
               <span>{item.label}</span>
             </Link>
           )

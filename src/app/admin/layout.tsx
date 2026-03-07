@@ -26,6 +26,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <Link href="/admin" className="hover:text-brand-pink">Orders</Link>
           <Link href="/admin/inventory" className="hover:text-brand-pink">Inventory</Link>
           <Link href="/admin/qr" className="hover:text-brand-pink">QR Code</Link>
+          <Link href="/pay" className="hover:text-brand-pink">E-Wallet</Link>
           <Link href="/profile" className="hover:text-brand-pink">Profile</Link>
         </div>
       </header>
