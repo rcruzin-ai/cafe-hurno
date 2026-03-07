@@ -6,7 +6,7 @@ import { useCartStore } from '@/lib/store/cart'
 import type { MenuItem, DrinkVariant } from '@/lib/types'
 
 export default function MenuCard({ item }: { item: MenuItem }) {
-  const [variant, setVariant] = useState<DrinkVariant>('hot')
+  const [variant, setVariant] = useState<DrinkVariant>(item.hot_available ? 'hot' : 'cold')
   const addItem = useCartStore((s) => s.addItem)
   const [added, setAdded] = useState(false)
 
@@ -37,19 +37,25 @@ export default function MenuCard({ item }: { item: MenuItem }) {
         <p className="text-[11px] text-brand-muted mt-0.5 line-clamp-2">{item.description}</p>
 
         <div className="flex gap-1.5 mt-2">
-          {(['hot', 'cold'] as DrinkVariant[]).map((v) => (
-            <button
-              key={v}
-              onClick={() => setVariant(v)}
-              className={`flex-1 text-[10px] py-1 rounded-full font-medium transition capitalize ${
-                variant === v
-                  ? 'bg-brand-dark text-white'
-                  : 'bg-gray-100 text-brand-muted'
-              }`}
-            >
-              {v} ({v === 'hot' ? item.hot_size_oz : item.cold_size_oz}oz)
-            </button>
-          ))}
+          {(['hot', 'cold'] as DrinkVariant[]).map((v) => {
+            const disabled = v === 'hot' && !item.hot_available
+            return (
+              <button
+                key={v}
+                onClick={() => !disabled && setVariant(v)}
+                disabled={disabled}
+                className={`flex-1 text-[10px] py-1 rounded-full font-medium transition capitalize ${
+                  disabled
+                    ? 'bg-gray-100 text-gray-300 cursor-not-allowed'
+                    : variant === v
+                    ? 'bg-brand-dark text-white'
+                    : 'bg-gray-100 text-brand-muted'
+                }`}
+              >
+                {v} ({v === 'hot' ? item.hot_size_oz : item.cold_size_oz}oz)
+              </button>
+            )
+          })}
         </div>
 
         <div className="flex items-center justify-between mt-2.5">
