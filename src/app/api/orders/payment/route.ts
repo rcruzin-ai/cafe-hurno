@@ -11,7 +11,7 @@ export async function PATCH(request: NextRequest) {
     .select('role')
     .eq('id', user.id)
     .single()
-  if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (profile?.role !== 'admin' && profile?.role !== 'super_admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   let body: { order_id?: string; payment_status?: string; payment_method?: string | null }
   try {

@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     .select('role')
     .eq('id', user.id)
     .single()
-  if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (profile?.role !== 'admin' && profile?.role !== 'super_admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const { allowed } = checkRateLimit(`inventory:${user.id}`, 30, 60_000) // 30/minute for admin
   if (!allowed) {
