@@ -12,7 +12,7 @@ export default function PayPage() {
         <div className="rounded-xl overflow-hidden w-full max-w-[280px]">
           <Image
             src="/images/e-wallet.png"
-            alt="GCash QR Code - Cafe Hurno"
+            alt="GCash QR Code - Café Hurno"
             width={400}
             height={600}
             className="w-full h-auto"

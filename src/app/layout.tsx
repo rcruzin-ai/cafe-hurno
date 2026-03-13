@@ -6,7 +6,7 @@ import BottomNav from "@/components/BottomNav";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Cafe Hurno",
+  title: "Café Hurno",
   description: "Cozy coffee corner for all coffee lovers",
 };
 

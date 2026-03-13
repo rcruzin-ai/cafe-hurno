@@ -16,13 +16,13 @@ export default function Home() {
         <div className="bg-white rounded-2xl shadow-sm px-5 py-3 mb-4 inline-flex items-center gap-3">
           <Image
             src="/images/logo.png"
-            alt="Cafe Hurno Logo"
+            alt="Café Hurno Logo"
             width={36}
             height={36}
             className="rounded-lg"
           />
           <div className="text-left">
-            <h1 className="text-3xl font-bold text-brand-dark tracking-tight">Cafe Hurno</h1>
+            <h1 className="text-3xl font-bold text-brand-dark tracking-tight">Café Hurno</h1>
             <p className="text-brand-muted text-sm mt-1">Your cozy coffee corner</p>
           </div>
         </div>

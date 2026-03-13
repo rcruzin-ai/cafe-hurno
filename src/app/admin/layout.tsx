@@ -23,14 +23,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="min-h-screen bg-gray-50">
       <header className="bg-brand-dark text-white px-4 py-2 flex items-center justify-between">
         <Link href="/admin">
-          <Image src="/images/logo.png" alt="Cafe Hurno" width={36} height={36} className="rounded-full" />
+          <Image src="/images/logo.png" alt="Café Hurno" width={36} height={36} className="rounded-full" />
         </Link>
         <div className="flex gap-3 text-xs">
           <Link href="/admin" className="hover:text-brand-pink">Orders</Link>
           <Link href="/admin/inventory" className="hover:text-brand-pink">Inventory</Link>
           <Link href="/admin/qr" className="hover:text-brand-pink">QR</Link>
           <Link href="/pay" className="hover:text-brand-pink">E-Wallet</Link>
-          <Link href="/profile" className="hover:text-brand-pink">Profile</Link>
+          <Link href="/menu" className="hover:text-brand-pink">Home</Link>
         </div>
       </header>
       <div className="max-w-2xl mx-auto">{children}</div>
