@@ -17,8 +17,8 @@ export default function Home() {
           <Image
             src="/images/logo.png"
             alt="Café Hurno Logo"
-            width={36}
-            height={36}
+            width={64}
+            height={64}
             className="rounded-lg"
           />
           <div className="text-left">
