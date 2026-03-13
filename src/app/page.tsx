@@ -23,7 +23,7 @@ export default function Home() {
           />
           <div className="text-left">
             <h1 className="text-3xl font-bold text-brand-dark tracking-tight">Café Hurno</h1>
-            <p className="text-brand-muted text-sm mt-1">Your cozy coffee corner</p>
+            <p className="text-brand-muted text-sm mt-1">Where Coffee Meets Community</p>
           </div>
         </div>
 
