@@ -2,10 +2,11 @@
 
 import { createClient } from '@/lib/supabase/client'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS, PAYMENT_STATUS_LABELS, PAYMENT_STATUS_COLORS, PAYMENT_METHOD_LABELS } from '@/lib/constants'
-import type { OrderWithItems, OrderStatus, PaymentStatus, PaymentMethod, UserRole } from '@/lib/types'
+import type { OrderWithItems, OrderStatus, PaymentStatus, PaymentMethod, UserRole, OrderItemWithMenu } from '@/lib/types'
 import { useState } from 'react'
 
 const STATUS_FLOW: OrderStatus[] = ['pending', 'completed']
+const EXTRA_SHOT_PRICE = 20
 
 export default function AdminOrderRow({ order, userRole, onStatusChange }: { order: OrderWithItems, userRole: UserRole, onStatusChange?: () => void }) {
   const [status, setStatus] = useState<OrderStatus>(order.status)
@@ -16,6 +17,8 @@ export default function AdminOrderRow({ order, userRole, onStatusChange }: { ord
     order.customer_name || order.profiles?.full_name || order.profiles?.email || 'Customer'
   )
   const [deleted, setDeleted] = useState(false)
+  const [orderItems, setOrderItems] = useState<OrderItemWithMenu[]>(order.order_items || [])
+  const [orderTotal, setOrderTotal] = useState(order.total)
   const supabase = createClient()
 
   const nextStatus = status === 'voided' ? null : STATUS_FLOW[STATUS_FLOW.indexOf(status) + 1] || null
@@ -106,6 +109,36 @@ export default function AdminOrderRow({ order, userRole, onStatusChange }: { ord
     }
   }
 
+  const handleToggleExtraShot = async (item: OrderItemWithMenu) => {
+    const newExtraShot = !item.extra_shot
+    const newAddOnPrice = newExtraShot ? EXTRA_SHOT_PRICE : 0
+    const priceDiff = (newExtraShot ? EXTRA_SHOT_PRICE : -EXTRA_SHOT_PRICE) * item.quantity
+    const newTotal = orderTotal + priceDiff
+
+    // Update order_item
+    const { error: itemError } = await supabase
+      .from('order_items')
+      .update({ extra_shot: newExtraShot, add_on_price: newAddOnPrice })
+      .eq('id', item.id)
+
+    if (itemError) return
+
+    // Update order total
+    const { error: orderError } = await supabase
+      .from('orders')
+      .update({ total: newTotal })
+      .eq('id', order.id)
+
+    if (orderError) return
+
+    // Update local state
+    setOrderItems(prev => prev.map(i =>
+      i.id === item.id ? { ...i, extra_shot: newExtraShot, add_on_price: newAddOnPrice } : i
+    ))
+    setOrderTotal(newTotal)
+    onStatusChange?.()
+  }
+
   return (
     <div className={`bg-white rounded-xl p-4 shadow-sm border-l-2 ${
   isVoided ? 'opacity-60 border-l-transparent' :
@@ -161,23 +194,37 @@ export default function AdminOrderRow({ order, userRole, onStatusChange }: { ord
         </div>
       </div>
 
-      <div className="space-y-1 text-sm mb-3">
-        {order.order_items?.map((item) => (
-          <div key={item.id} className="flex justify-between text-gray-600">
-            <span>
-              {item.menu_items?.name}
-              <span className="text-gray-400 ml-1 capitalize text-xs">({item.variant})</span>
-              {item.extra_shot && <span className="text-brand-brown text-xs ml-1">+shot</span>}
-              <span className="text-gray-400 ml-1">x{item.quantity}</span>
-            </span>
-            <span>₱{(item.price + (item.add_on_price || 0)) * item.quantity}</span>
+      <div className="space-y-1.5 text-sm mb-3">
+        {orderItems.map((item) => (
+          <div key={item.id}>
+            <div className="flex justify-between text-gray-600">
+              <span>
+                {item.menu_items?.name}
+                <span className="text-gray-400 ml-1 capitalize text-xs">({item.variant})</span>
+                {item.extra_shot && <span className="text-brand-brown text-xs ml-1">+shot</span>}
+                <span className="text-gray-400 ml-1">x{item.quantity}</span>
+              </span>
+              <span>₱{(item.price + (item.add_on_price || 0)) * item.quantity}</span>
+            </div>
+            {!isVoided && (
+              <button
+                onClick={() => handleToggleExtraShot(item)}
+                className={`mt-0.5 text-[10px] px-2 py-0.5 rounded-full font-medium transition ${
+                  item.extra_shot
+                    ? 'bg-brand-brown text-white hover:bg-brand-brown/80'
+                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                }`}
+              >
+                {item.extra_shot ? '✓ +Espresso ₱20' : '+ Espresso ₱20'}
+              </button>
+            )}
           </div>
         ))}
       </div>
 
       <div className="flex items-center justify-between border-t pt-2">
         <div className="flex items-center gap-2">
-          <span className="font-bold text-brand-brown">₱{order.total}</span>
+          <span className="font-bold text-brand-brown">₱{orderTotal}</span>
           {!isVoided && (
             <button
               onClick={handleVoid}

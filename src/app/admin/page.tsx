@@ -255,7 +255,7 @@ function AdminTableRow({ order }: { order: OrderWithItems }) {
   const isGuest = !order.customer_id
 
   const itemsSummary = order.order_items
-    ?.map((i) => `${i.quantity}x ${i.menu_items?.name} (${i.variant})`)
+    ?.map((i) => `${i.quantity}x ${i.menu_items?.name} (${i.variant})${i.extra_shot ? ' +shot' : ''}`)
     .join(', ') || ''
 
   const paymentStatus = order.payment_status || 'unpaid'
