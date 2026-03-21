@@ -2,11 +2,14 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { CartItem, MenuItem, DrinkVariant } from '@/lib/types'
 
+export const EXTRA_SHOT_PRICE = 20
+
 interface CartStore {
   items: CartItem[]
   addItem: (menuItem: MenuItem, variant: DrinkVariant) => void
   removeItem: (menuItemId: string, variant: DrinkVariant) => void
   updateQuantity: (menuItemId: string, variant: DrinkVariant, quantity: number) => void
+  toggleExtraShot: (menuItemId: string, variant: DrinkVariant) => void
   clearCart: () => void
   getTotal: () => number
   getItemCount: () => number
@@ -31,7 +34,7 @@ export const useCartStore = create<CartStore>()(
               ),
             }
           }
-          return { items: [...state.items, { menuItem, variant, quantity: 1 }] }
+          return { items: [...state.items, { menuItem, variant, quantity: 1, extraShot: false }] }
         })
       },
 
@@ -57,10 +60,23 @@ export const useCartStore = create<CartStore>()(
         }))
       },
 
+      toggleExtraShot: (menuItemId, variant) => {
+        set((state) => ({
+          items: state.items.map((i) =>
+            i.menuItem.id === menuItemId && i.variant === variant
+              ? { ...i, extraShot: !i.extraShot }
+              : i
+          ),
+        }))
+      },
+
       clearCart: () => set({ items: [] }),
 
       getTotal: () => {
-        return get().items.reduce((sum, i) => sum + i.menuItem.price * i.quantity, 0)
+        return get().items.reduce((sum, i) => {
+          const itemPrice = i.menuItem.price + (i.extraShot ? EXTRA_SHOT_PRICE : 0)
+          return sum + itemPrice * i.quantity
+        }, 0)
       },
 
       getItemCount: () => {

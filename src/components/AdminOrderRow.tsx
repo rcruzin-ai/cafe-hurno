@@ -167,9 +167,10 @@ export default function AdminOrderRow({ order, userRole, onStatusChange }: { ord
             <span>
               {item.menu_items?.name}
               <span className="text-gray-400 ml-1 capitalize text-xs">({item.variant})</span>
+              {item.extra_shot && <span className="text-brand-brown text-xs ml-1">+shot</span>}
               <span className="text-gray-400 ml-1">x{item.quantity}</span>
             </span>
-            <span>₱{item.price * item.quantity}</span>
+            <span>₱{(item.price + (item.add_on_price || 0)) * item.quantity}</span>
           </div>
         ))}
       </div>

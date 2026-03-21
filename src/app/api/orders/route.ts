@@ -2,10 +2,13 @@ import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { checkRateLimit } from '@/lib/rate-limit'
 
+const EXTRA_SHOT_PRICE = 20
+
 interface OrderItemInput {
   menu_item_id: string
   variant: 'hot' | 'cold'
   quantity: number
+  extra_shot?: boolean
 }
 
 export async function POST(request: NextRequest) {
@@ -72,7 +75,10 @@ export async function POST(request: NextRequest) {
   }
 
   const priceMap = Object.fromEntries(menuItems.map(m => [m.id, m.price]))
-  const total = items.reduce((sum, item) => sum + priceMap[item.menu_item_id] * item.quantity, 0)
+  const total = items.reduce((sum, item) => {
+    const addOn = item.extra_shot ? EXTRA_SHOT_PRICE : 0
+    return sum + (priceMap[item.menu_item_id] + addOn) * item.quantity
+  }, 0)
 
   // Get next queue number (atomic)
   const { data: queueData, error: queueError } = await supabase.rpc('next_queue_number')
@@ -109,6 +115,8 @@ export async function POST(request: NextRequest) {
       variant: item.variant,
       quantity: item.quantity,
       price: priceMap[item.menu_item_id],
+      extra_shot: item.extra_shot || false,
+      add_on_price: item.extra_shot ? EXTRA_SHOT_PRICE : 0,
     }))
     const { error: itemsError } = await supabase.from('order_items').insert(orderItems)
     if (itemsError) {
@@ -133,6 +141,8 @@ export async function POST(request: NextRequest) {
       variant: item.variant,
       quantity: item.quantity,
       price: priceMap[item.menu_item_id],
+      extra_shot: item.extra_shot || false,
+      add_on_price: item.extra_shot ? EXTRA_SHOT_PRICE : 0,
     }))
     const { error: itemsError } = await supabase.rpc('create_guest_order_items', {
       p_items: itemsPayload,

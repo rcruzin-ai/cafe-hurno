@@ -65,6 +65,7 @@ export default function CartPage() {
             menu_item_id: item.menuItem.id,
             variant: item.variant,
             quantity: item.quantity,
+            extra_shot: item.extraShot || false,
           })),
           ...(isAdmin ? { customer_name: adminCustomerName.trim() } : !user ? { customer_name: guestName.trim() } : {}),
         }),

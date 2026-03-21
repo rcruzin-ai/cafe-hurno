@@ -51,6 +51,8 @@ export interface OrderItem {
   variant: DrinkVariant
   quantity: number
   price: number
+  extra_shot: boolean
+  add_on_price: number
 }
 
 export interface OrderItemWithMenu extends OrderItem {
@@ -70,6 +72,7 @@ export interface CartItem {
   menuItem: MenuItem
   variant: DrinkVariant
   quantity: number
+  extraShot: boolean
 }
 
 export interface InventoryItem {

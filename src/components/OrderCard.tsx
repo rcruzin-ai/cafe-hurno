@@ -35,8 +35,9 @@ export default function OrderCard({ order }: { order: OrderWithItems }) {
             <span className="text-gray-700">
               {item.menu_items?.name}
               <span className="text-gray-400 ml-1 text-xs capitalize">({item.variant}) ×{item.quantity}</span>
+              {item.extra_shot && <span className="text-brand-brown text-xs ml-1">+shot</span>}
             </span>
-            <span className="text-brand-dark font-medium">₱{item.price * item.quantity}</span>
+            <span className="text-brand-dark font-medium">₱{(item.price + (item.add_on_price || 0)) * item.quantity}</span>
           </div>
         ))}
       </div>
