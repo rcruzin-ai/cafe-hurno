@@ -30,7 +30,7 @@ export default function MenuCard({ item }: { item: MenuItem }) {
       <div className="p-3">
         <h3 className="font-semibold text-sm text-brand-dark leading-snug">{item.name}</h3>
         {item.description && (
-          <p className="text-[11px] text-brand-muted mt-0.5 line-clamp-1">{item.description}</p>
+          <p className="text-[10px] text-brand-muted mt-0.5 line-clamp-1">{item.description}</p>
         )}
 
         {/* Variant pills */}
