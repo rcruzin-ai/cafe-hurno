@@ -19,9 +19,9 @@ export default function MenuCard({ item }: { item: MenuItem }) {
   return (
     <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/60">
       {/* Image */}
-      <div className="relative h-32 bg-brand-dark/90">
+      <div className="relative h-36 bg-white">
         {item.image_url ? (
-          <Image src={item.image_url} alt={item.name} fill className="object-cover" />
+          <Image src={item.image_url} alt={item.name} fill className="object-contain p-2" />
         ) : (
           <div className="flex items-center justify-center h-full text-3xl text-white/20">&#9749;</div>
         )}
