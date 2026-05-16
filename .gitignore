@@ -31,6 +31,10 @@ yarn-error.log*
 # vercel
 .vercel
 
+# claude code (local settings/commands) — track only .claude/rules/
+.claude/*
+!.claude/rules/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

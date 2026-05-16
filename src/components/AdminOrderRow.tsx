@@ -16,6 +16,9 @@ export default function AdminOrderRow({ order, userRole, onStatusChange }: { ord
   const [customerName, setCustomerName] = useState(
     order.customer_name || order.profiles?.full_name || order.profiles?.email || 'Customer'
   )
+  const [editingDate, setEditingDate] = useState(false)
+  const [createdAt, setCreatedAt] = useState(order.created_at)
+  const [dateDraft, setDateDraft] = useState('')
   const [deleted, setDeleted] = useState(false)
   const [orderItems, setOrderItems] = useState<OrderItemWithMenu[]>(order.order_items || [])
   const [orderTotal, setOrderTotal] = useState(order.total)
@@ -73,6 +76,31 @@ export default function AdminOrderRow({ order, userRole, onStatusChange }: { ord
       .update({ customer_name: trimmed })
       .eq('id', order.id)
     setEditingName(false)
+  }
+
+  const toDatetimeLocalValue = (iso: string) => {
+    const d = new Date(iso)
+    const pad = (n: number) => String(n).padStart(2, '0')
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+  }
+
+  const handleStartEditDate = () => {
+    setDateDraft(toDatetimeLocalValue(createdAt))
+    setEditingDate(true)
+  }
+
+  const handleSaveDate = async () => {
+    if (!dateDraft) return
+    const newIso = new Date(dateDraft).toISOString()
+    const { error } = await supabase
+      .from('orders')
+      .update({ created_at: newIso })
+      .eq('id', order.id)
+    if (!error) {
+      setCreatedAt(newIso)
+      setEditingDate(false)
+      onStatusChange?.()
+    }
   }
 
   const handlePayment = async (method: 'cash' | 'wallet') => {
@@ -179,9 +207,31 @@ export default function AdminOrderRow({ order, userRole, onStatusChange }: { ord
                 )}
               </p>
             )}
-            <p className="text-xs text-gray-400">
-              {new Date(order.created_at).toLocaleString()}
-            </p>
+            {isSuperAdmin && editingDate ? (
+              <div className="flex items-center gap-1 mt-0.5">
+                <input
+                  type="datetime-local"
+                  value={dateDraft}
+                  onChange={(e) => setDateDraft(e.target.value)}
+                  className="text-xs border rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-brand-pink"
+                  autoFocus
+                />
+                <button onClick={handleSaveDate} className="text-xs text-green-600 font-medium">Save</button>
+                <button onClick={() => setEditingDate(false)} className="text-xs text-gray-400">Cancel</button>
+              </div>
+            ) : (
+              <p className="text-xs text-gray-400">
+                {new Date(createdAt).toLocaleString()}
+                {isSuperAdmin && (
+                  <button
+                    onClick={handleStartEditDate}
+                    className="ml-1 text-[10px] text-gray-400 hover:text-brand-brown"
+                  >
+                    edit
+                  </button>
+                )}
+              </p>
+            )}
           </div>
         </div>
         <div className="flex gap-1.5">
@@ -248,21 +298,21 @@ export default function AdminOrderRow({ order, userRole, onStatusChange }: { ord
               <>
                 <button
                   onClick={() => handlePayment('cash')}
-                  className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-full text-xs font-medium hover:bg-brand-dark hover:text-white transition"
+                  className="bg-green-600 text-white px-3 py-1.5 rounded-full text-xs font-medium hover:bg-green-700 transition"
                 >
                   Cash
                 </button>
                 <button
                   onClick={() => handlePayment('wallet')}
-                  className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-full text-xs font-medium hover:bg-brand-dark hover:text-white transition"
+                  className="bg-blue-600 text-white px-3 py-1.5 rounded-full text-xs font-medium hover:bg-blue-700 transition"
                 >
                   E-Wallet
                 </button>
               </>
             ) : (
-              <span className="text-xs text-gray-500">
+              <span className={`text-xs font-medium ${paymentMethod === 'wallet' ? 'text-blue-600' : 'text-green-600'}`}>
                 Paid via {PAYMENT_METHOD_LABELS[paymentMethod || 'cash']}
-                <button onClick={handleUndoPayment} className="ml-1 text-red-400 underline">undo</button>
+                <button onClick={handleUndoPayment} className="ml-1 text-red-400 underline font-normal">undo</button>
               </span>
             )}
           </div>
