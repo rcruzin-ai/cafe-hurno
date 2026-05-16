@@ -62,3 +62,21 @@ Promotes a previous deployment to production without rebuilding. Useful for fast
 **Env var change:** update in dashboard → `npx vercel --prod --force` (the `--force` is critical for `NEXT_PUBLIC_*` vars to actually re-bake)
 
 **Broken deploy:** `npx vercel ls` → grab previous good URL → `npx vercel rollback <url>`
+
+## GitHub push — two accounts on this machine
+
+Raymond has two `gh`-authenticated GitHub accounts: `rcruzin` (Sprout work) and `rcruzin-ai` (personal). This repo (`rcruzin-ai/cafe-hurno`) belongs to the personal account — pushes must go from `rcruzin-ai`.
+
+Check the active account before pushing:
+```
+gh auth status | grep -E "Active|account"
+```
+
+Switch if needed:
+```
+gh auth switch --user rcruzin-ai
+```
+
+Then `git push origin main` will work. A 403 "Permission denied to rcruzin" on this repo always means the wrong account is active — switch and retry, don't re-auth.
+
+**Identity caveat:** `git config user.email` is `rcruzin@sprout.ph` globally. Commits in this personal repo will be *authored* under the Sprout identity unless a repo-local override is set. Ask before changing it — Raymond hasn't requested this so far.
