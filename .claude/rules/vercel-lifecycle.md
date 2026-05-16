@@ -65,18 +65,12 @@ Promotes a previous deployment to production without rebuilding. Useful for fast
 
 ## GitHub push — two accounts on this machine
 
-Raymond has two `gh`-authenticated GitHub accounts: `rcruzin` (Sprout work) and `rcruzin-ai` (personal). This repo (`rcruzin-ai/cafe-hurno`) belongs to the personal account — pushes must go from `rcruzin-ai`.
+Raymond has two `gh`-authenticated GitHub accounts: `rcruzin` (Sprout work) and `rcruzin-ai` (personal). This repo belongs to `rcruzin-ai`; pushes from `rcruzin` are rejected with 403.
 
-Check the active account before pushing:
-```
-gh auth status | grep -E "Active|account"
-```
-
-Switch if needed:
+A PreToolUse hook in `.claude/settings.json` blocks any `git push` unless `gh auth status` shows `rcruzin-ai` as the active account. If a push is blocked:
 ```
 gh auth switch --user rcruzin-ai
 ```
+Then retry. Don't try to "fix" the 403 by re-authenticating — it's almost always just the wrong active account.
 
-Then `git push origin main` will work. A 403 "Permission denied to rcruzin" on this repo always means the wrong account is active — switch and retry, don't re-auth.
-
-**Identity caveat:** `git config user.email` is `rcruzin@sprout.ph` globally. Commits in this personal repo will be *authored* under the Sprout identity unless a repo-local override is set. Ask before changing it — Raymond hasn't requested this so far.
+**Identity caveat:** `git config user.email` is `rcruzin@sprout.ph` globally, so commits in this repo are *authored* under the Sprout identity. Ask before changing — Raymond hasn't requested this.
