@@ -63,6 +63,26 @@ Promotes a previous deployment to production without rebuilding. Useful for fast
 
 **Broken deploy:** `npx vercel ls` → grab previous good URL → `npx vercel rollback <url>`
 
+## Branching workflow
+
+- `main` = release branch, protected. Only humans open PRs into main.
+- `dev` = working integration branch. All Claude work goes through dev.
+- Feature branches: `feat/<slug>`, `fix/<slug>`, `chore/<slug>` — branched from `dev`, PR back into `dev`.
+
+Default behavior in this repo:
+```
+git checkout dev
+git pull
+git checkout -b feat/<slug>
+# ...work...
+git push -u origin feat/<slug>
+gh pr create --base dev --title "..." --body "..."
+```
+
+When a feature branch is merged into dev and the time comes to ship to production, **the human opens the dev→main PR manually**. Don't attempt it from this terminal — the guard hook (`.claude/hooks/guard-git.sh`) blocks both `git push origin main` and `gh pr create --base main`.
+
+If the guard fires, that's a signal you targeted the wrong base — fix the branch/base, don't argue with the hook.
+
 ## GitHub push — two accounts on this machine
 
 Raymond has two `gh`-authenticated GitHub accounts: `rcruzin` (Sprout work) and `rcruzin-ai` (personal). This repo belongs to `rcruzin-ai`; pushes from `rcruzin` are rejected with 403.

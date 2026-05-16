@@ -38,6 +38,13 @@
 - No GitHub Actions CI — deploy manually: `npx vercel --prod`
 - Env vars on Vercel: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - Full Vercel lifecycle (deploy, env vars, logs, rollback) is handled from this terminal — see `.claude/rules/vercel-lifecycle.md` for the playbook, especially gotchas around `Sensitive` env vars showing as empty in `vercel pull` and the need for `--force` after env-var changes.
+
+## Branching Workflow
+- `main` is the release branch. **Only humans PR into main.** Claude must not push to main or open PRs targeting main.
+- `dev` is the working integration branch. All Claude work merges into `dev` first.
+- Feature branches use prefixes: `feat/<slug>`, `fix/<slug>`, `chore/<slug>` — branch from `dev`, PR back into `dev`.
+- Flow: `feat/foo` → PR to `dev` → human PRs `dev` → `main` when ready to release.
+- A PreToolUse hook (`.claude/hooks/guard-git.sh`) enforces this — it blocks `git push` to main/master and `gh pr create --base main`. If the hook fires, you're doing the wrong thing; switch to dev or a feature branch.
 - Google OAuth redirect: configured in Supabase dashboard
 - After adding local assets (images), must redeploy for them to be available in production
 
